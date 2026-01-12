@@ -11,24 +11,28 @@ import {
     X,
     Loader2,
     Check,
-    ChevronRight,
-    Eye,
     DollarSign,
     Tag
 } from 'lucide-react';
+
+interface Category {
+    id: string;
+    name: string;
+    slug: string;
+}
+
+interface SubCategory {
+    id: string;
+    name: string;
+    slug: string;
+    category: Category;
+}
 
 interface SuperSubCategory {
     id: string;
     name: string;
     slug: string;
-    sub_category: {
-        id: string;
-        name: string;
-        category: {
-            id: string;
-            name: string;
-        };
-    };
+    sub_category: SubCategory;
 }
 
 interface Product {
@@ -40,8 +44,9 @@ interface Product {
     price: number;
     sale_price: number | null;
     stock: number;
-    super_sub_category_id: string;
-    super_sub_category: SuperSubCategory;
+    category_id: string | null;
+    sub_category_id: string | null;
+    super_sub_category_id: string | null;
     image_url: string | null;
     featured: boolean;
     status: string;
@@ -57,12 +62,15 @@ const formatPrice = (price: number) => {
 
 export default function ProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
     const [superSubCategories, setSuperSubCategories] = useState<SuperSubCategory[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [saving, setSaving] = useState(false);
+    const [categoryLevel, setCategoryLevel] = useState<'category' | 'sub_category' | 'super_sub_category'>('category');
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
@@ -71,6 +79,8 @@ export default function ProductsPage() {
         price: '',
         sale_price: '',
         stock: '0',
+        category_id: '',
+        sub_category_id: '',
         super_sub_category_id: '',
         featured: false,
         status: 'active'
@@ -90,12 +100,25 @@ export default function ProductsPage() {
         }
     };
 
-    const fetchSuperSubCategories = async () => {
+    const fetchCategories = async () => {
         try {
-            const response = await fetch('/api/admin/super-sub-categories');
-            if (response.ok) {
-                const data = await response.json();
-                setSuperSubCategories(data.superSubCategories || []);
+            const [catRes, subRes, superRes] = await Promise.all([
+                fetch('/api/admin/categories'),
+                fetch('/api/admin/sub-categories'),
+                fetch('/api/admin/super-sub-categories')
+            ]);
+
+            if (catRes.ok) {
+                const catData = await catRes.json();
+                setCategories(catData.categories || []);
+            }
+            if (subRes.ok) {
+                const subData = await subRes.json();
+                setSubCategories(subData.subCategories || []);
+            }
+            if (superRes.ok) {
+                const superData = await superRes.json();
+                setSuperSubCategories(superData.superSubCategories || []);
             }
         } catch (error) {
             console.error('Failed to fetch categories:', error);
@@ -103,7 +126,7 @@ export default function ProductsPage() {
     };
 
     useEffect(() => {
-        fetchSuperSubCategories();
+        fetchCategories();
         fetchProducts();
     }, []);
 
@@ -115,17 +138,23 @@ export default function ProductsPage() {
         e.preventDefault();
         setSaving(true);
 
-        try {
-            const url = '/api/admin/products';
-            const method = editingProduct ? 'PUT' : 'POST';
-            const body = editingProduct
-                ? { ...formData, id: editingProduct.id }
-                : formData;
+        // Clear category fields based on selected level
+        const payload = {
+            ...formData,
+            category_id: categoryLevel === 'category' ? formData.category_id : null,
+            sub_category_id: categoryLevel === 'sub_category' ? formData.sub_category_id : null,
+            super_sub_category_id: categoryLevel === 'super_sub_category' ? formData.super_sub_category_id : null,
+        };
 
-            const response = await fetch(url, {
-                method,
+        if (editingProduct) {
+            payload.id = editingProduct.id;
+        }
+
+        try {
+            const response = await fetch('/api/admin/products', {
+                method: editingProduct ? 'PUT' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
+                body: JSON.stringify(payload),
             });
 
             if (response.ok) {
@@ -144,15 +173,10 @@ export default function ProductsPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this product?')) {
-            return;
-        }
+        if (!confirm('Are you sure you want to delete this product?')) return;
 
         try {
-            const response = await fetch(`/api/admin/products?id=${id}`, {
-                method: 'DELETE',
-            });
-
+            const response = await fetch(`/api/admin/products?id=${id}`, { method: 'DELETE' });
             if (response.ok) {
                 await fetchProducts();
             } else {
@@ -166,6 +190,16 @@ export default function ProductsPage() {
 
     const openEditModal = (product: Product) => {
         setEditingProduct(product);
+
+        // Determine category level
+        if (product.super_sub_category_id) {
+            setCategoryLevel('super_sub_category');
+        } else if (product.sub_category_id) {
+            setCategoryLevel('sub_category');
+        } else {
+            setCategoryLevel('category');
+        }
+
         setFormData({
             name: product.name,
             slug: product.slug,
@@ -174,6 +208,8 @@ export default function ProductsPage() {
             price: product.price.toString(),
             sale_price: product.sale_price?.toString() || '',
             stock: product.stock.toString(),
+            category_id: product.category_id || '',
+            sub_category_id: product.sub_category_id || '',
             super_sub_category_id: product.super_sub_category_id || '',
             featured: product.featured,
             status: product.status
@@ -183,10 +219,12 @@ export default function ProductsPage() {
 
     const openCreateModal = () => {
         setEditingProduct(null);
+        setCategoryLevel('category');
         setFormData({
             name: '', slug: '', sku: '', description: '',
             price: '', sale_price: '', stock: '0',
-            super_sub_category_id: '', featured: false, status: 'active'
+            category_id: '', sub_category_id: '', super_sub_category_id: '',
+            featured: false, status: 'active'
         });
         setShowModal(true);
     };
@@ -205,6 +243,23 @@ export default function ProductsPage() {
     const onSaleCount = products.filter(p => p.sale_price).length;
     const outOfStockCount = products.filter(p => p.stock === 0).length;
 
+    // Get product category display name
+    const getProductCategory = (product: Product) => {
+        if (product.super_sub_category_id) {
+            const superSub = superSubCategories.find(s => s.id === product.super_sub_category_id);
+            if (superSub) return `${superSub.sub_category?.category?.name} → ${superSub.sub_category?.name} → ${superSub.name}`;
+        }
+        if (product.sub_category_id) {
+            const sub = subCategories.find(s => s.id === product.sub_category_id);
+            if (sub) return `${sub.category?.name} → ${sub.name}`;
+        }
+        if (product.category_id) {
+            const cat = categories.find(c => c.id === product.category_id);
+            if (cat) return cat.name;
+        }
+        return 'No category';
+    };
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -216,11 +271,7 @@ export default function ProductsPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-between"
-            >
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/30">
                         <Package size={24} className="text-white" />
@@ -230,10 +281,7 @@ export default function ProductsPage() {
                         <p className="text-gray-500 text-sm">{products.length} products</p>
                     </div>
                 </div>
-                <button
-                    onClick={openCreateModal}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-medium rounded-xl shadow-lg shadow-red-500/30 transition-all duration-300"
-                >
+                <button onClick={openCreateModal} className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-medium rounded-xl shadow-lg shadow-red-500/30">
                     <Plus size={18} />
                     Add Product
                 </button>
@@ -246,10 +294,7 @@ export default function ProductsPage() {
                         <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
                             <Package size={20} className="text-red-500" />
                         </div>
-                        <div>
-                            <p className="text-gray-500 text-sm">Total</p>
-                            <p className="text-xl font-bold text-gray-900">{products.length}</p>
-                        </div>
+                        <div><p className="text-gray-500 text-sm">Total</p><p className="text-xl font-bold text-gray-900">{products.length}</p></div>
                     </div>
                 </div>
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
@@ -257,10 +302,7 @@ export default function ProductsPage() {
                         <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                             <Tag size={20} className="text-blue-500" />
                         </div>
-                        <div>
-                            <p className="text-gray-500 text-sm">Active</p>
-                            <p className="text-xl font-bold text-gray-900">{activeCount}</p>
-                        </div>
+                        <div><p className="text-gray-500 text-sm">Active</p><p className="text-xl font-bold text-gray-900">{activeCount}</p></div>
                     </div>
                 </div>
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
@@ -268,10 +310,7 @@ export default function ProductsPage() {
                         <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
                             <DollarSign size={20} className="text-amber-500" />
                         </div>
-                        <div>
-                            <p className="text-gray-500 text-sm">On Sale</p>
-                            <p className="text-xl font-bold text-gray-900">{onSaleCount}</p>
-                        </div>
+                        <div><p className="text-gray-500 text-sm">On Sale</p><p className="text-xl font-bold text-gray-900">{onSaleCount}</p></div>
                     </div>
                 </div>
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
@@ -279,10 +318,7 @@ export default function ProductsPage() {
                         <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
                             <Package size={20} className="text-red-500" />
                         </div>
-                        <div>
-                            <p className="text-gray-500 text-sm">Out of Stock</p>
-                            <p className="text-xl font-bold text-gray-900">{outOfStockCount}</p>
-                        </div>
+                        <div><p className="text-gray-500 text-sm">Out of Stock</p><p className="text-xl font-bold text-gray-900">{outOfStockCount}</p></div>
                     </div>
                 </div>
             </div>
@@ -307,7 +343,7 @@ export default function ProductsPage() {
                             <tr className="border-b border-gray-100 bg-gray-50">
                                 <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Product</th>
                                 <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">SKU</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Category</th>
+                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Category Path</th>
                                 <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Price</th>
                                 <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Stock</th>
                                 <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Status</th>
@@ -328,16 +364,8 @@ export default function ProductsPage() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-gray-500 font-mono text-sm">{product.sku || '-'}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-1 text-xs">
-                                            <span className="text-red-500">{product.super_sub_category?.sub_category?.category?.name}</span>
-                                            <ChevronRight size={10} className="text-gray-300" />
-                                            <span className="text-gray-500">{product.super_sub_category?.name}</span>
-                                        </div>
-                                    </td>
+                                    <td className="px-6 py-4"><span className="text-gray-500 font-mono text-sm">{product.sku || '-'}</span></td>
+                                    <td className="px-6 py-4"><span className="text-gray-500 text-xs">{getProductCategory(product)}</span></td>
                                     <td className="px-6 py-4">
                                         {product.sale_price ? (
                                             <div>
@@ -354,22 +382,14 @@ export default function ProductsPage() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${product.status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'
-                                            }`}>
+                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${product.status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
                                             {product.status}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-1">
-                                            <button className="p-2 hover:bg-gray-100 rounded-lg text-gray-500">
-                                                <Eye size={16} />
-                                            </button>
-                                            <button onClick={() => openEditModal(product)} className="p-2 hover:bg-gray-100 rounded-lg text-blue-500">
-                                                <Edit2 size={16} />
-                                            </button>
-                                            <button onClick={() => handleDelete(product.id)} className="p-2 hover:bg-red-50 rounded-lg text-red-500">
-                                                <Trash2 size={16} />
-                                            </button>
+                                            <button onClick={() => openEditModal(product)} className="p-2 hover:bg-gray-100 rounded-lg text-blue-500"><Edit2 size={16} /></button>
+                                            <button onClick={() => handleDelete(product.id)} className="p-2 hover:bg-red-50 rounded-lg text-red-500"><Trash2 size={16} /></button>
                                         </div>
                                     </td>
                                 </tr>
@@ -389,161 +409,110 @@ export default function ProductsPage() {
             {/* Modal */}
             <AnimatePresence>
                 {showModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-                        onClick={closeModal}
-                    >
-                        <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-                        >
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeModal}>
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                             <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white">
-                                <h2 className="text-xl font-semibold text-gray-900">
-                                    {editingProduct ? 'Edit Product' : 'Add Product'}
-                                </h2>
-                                <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-lg">
-                                    <X size={20} className="text-gray-500" />
-                                </button>
+                                <h2 className="text-xl font-semibold text-gray-900">{editingProduct ? 'Edit Product' : 'Add Product'}</h2>
+                                <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-lg"><X size={20} className="text-gray-500" /></button>
                             </div>
 
                             <form onSubmit={handleSubmit} className="p-6 space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                                        <input
-                                            type="text"
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({
-                                                ...formData,
-                                                name: e.target.value,
-                                                slug: editingProduct ? formData.slug : generateSlug(e.target.value)
-                                            })}
-                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
-                                            required
-                                        />
+                                        <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value, slug: editingProduct ? formData.slug : generateSlug(e.target.value) })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500" required />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                                        <input
-                                            type="text"
-                                            value={formData.slug}
-                                            onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl font-mono text-sm focus:outline-none focus:border-red-500"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                                        <input
-                                            type="text"
-                                            value={formData.sku}
-                                            onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl font-mono focus:outline-none focus:border-red-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                                        <select
-                                            value={formData.super_sub_category_id}
-                                            onChange={(e) => setFormData({ ...formData, super_sub_category_id: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
-                                        >
-                                            <option value="">Select category</option>
-                                            {superSubCategories.map((cat) => (
-                                                <option key={cat.id} value={cat.id}>
-                                                    {cat.sub_category?.category?.name} → {cat.sub_category?.name} → {cat.name}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <input type="text" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl font-mono text-sm focus:outline-none focus:border-red-500" required />
                                     </div>
                                 </div>
 
                                 <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+                                    <input type="text" value={formData.sku} onChange={(e) => setFormData({ ...formData, sku: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl font-mono focus:outline-none focus:border-red-500" />
+                                </div>
+
+                                {/* Category Level Selection */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Assign to Level</label>
+                                    <div className="flex gap-2">
+                                        <button type="button" onClick={() => setCategoryLevel('category')} className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${categoryLevel === 'category' ? 'bg-red-50 border-red-300 text-red-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                                            Category
+                                        </button>
+                                        <button type="button" onClick={() => setCategoryLevel('sub_category')} className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${categoryLevel === 'sub_category' ? 'bg-red-50 border-red-300 text-red-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                                            Sub Category
+                                        </button>
+                                        <button type="button" onClick={() => setCategoryLevel('super_sub_category')} className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition-colors ${categoryLevel === 'super_sub_category' ? 'bg-red-50 border-red-300 text-red-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+                                            Super Sub Category
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Category Selector based on level */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        {categoryLevel === 'category' ? 'Category' : categoryLevel === 'sub_category' ? 'Sub Category' : 'Super Sub Category'}
+                                    </label>
+                                    {categoryLevel === 'category' && (
+                                        <select value={formData.category_id} onChange={(e) => setFormData({ ...formData, category_id: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500" required>
+                                            <option value="">Select Category</option>
+                                            {categories.map((cat) => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                                        </select>
+                                    )}
+                                    {categoryLevel === 'sub_category' && (
+                                        <select value={formData.sub_category_id} onChange={(e) => setFormData({ ...formData, sub_category_id: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500" required>
+                                            <option value="">Select Sub Category</option>
+                                            {subCategories.map((sub) => <option key={sub.id} value={sub.id}>{sub.category?.name} → {sub.name}</option>)}
+                                        </select>
+                                    )}
+                                    {categoryLevel === 'super_sub_category' && (
+                                        <select value={formData.super_sub_category_id} onChange={(e) => setFormData({ ...formData, super_sub_category_id: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500" required>
+                                            <option value="">Select Super Sub Category</option>
+                                            {superSubCategories.map((ss) => <option key={ss.id} value={ss.id}>{ss.sub_category?.category?.name} → {ss.sub_category?.name} → {ss.name}</option>)}
+                                        </select>
+                                    )}
+                                </div>
+
+                                <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                    <textarea
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl resize-none focus:outline-none focus:border-red-500"
-                                        rows={3}
-                                    />
+                                    <textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl resize-none focus:outline-none focus:border-red-500" rows={3} />
                                 </div>
 
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            value={formData.price}
-                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
-                                            required
-                                        />
+                                        <input type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500" required />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Sale Price ($)</label>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            value={formData.sale_price}
-                                            onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
-                                        />
+                                        <input type="number" step="0.01" value={formData.sale_price} onChange={(e) => setFormData({ ...formData, sale_price: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500" />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Stock</label>
-                                        <input
-                                            type="number"
-                                            value={formData.stock}
-                                            onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
-                                        />
+                                        <input type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500" />
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                        <select
-                                            value={formData.status}
-                                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
-                                        >
+                                        <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500">
                                             <option value="active">Active</option>
                                             <option value="inactive">Inactive</option>
                                         </select>
                                     </div>
                                     <div className="flex items-center pt-6">
                                         <label className="flex items-center gap-2 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.featured}
-                                                onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                                                className="w-4 h-4 text-red-500 rounded focus:ring-red-500"
-                                            />
+                                            <input type="checkbox" checked={formData.featured} onChange={(e) => setFormData({ ...formData, featured: e.target.checked })} className="w-4 h-4 text-red-500 rounded focus:ring-red-500" />
                                             <span className="text-sm font-medium text-gray-700">Featured Product</span>
                                         </label>
                                     </div>
                                 </div>
 
                                 <div className="flex gap-3 pt-4">
-                                    <button type="button" onClick={closeModal} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50">
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={saving}
-                                        className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50"
-                                    >
+                                    <button type="button" onClick={closeModal} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50">Cancel</button>
+                                    <button type="submit" disabled={saving} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50">
                                         {saving ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                                         {saving ? 'Saving...' : 'Save Product'}
                                     </button>

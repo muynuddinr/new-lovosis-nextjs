@@ -12,6 +12,11 @@ export async function GET() {
             .from('products')
             .select(`
         *,
+        category:categories(id, name, slug),
+        sub_category:sub_categories(
+          id, name, slug,
+          category:categories(id, name, slug)
+        ),
         super_sub_category:super_sub_categories(
           id, name, slug,
           sub_category:sub_categories(
@@ -43,7 +48,8 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const {
             name, slug, sku, description, price, sale_price,
-            stock, super_sub_category_id, image_url, featured, status
+            stock, category_id, sub_category_id, super_sub_category_id,
+            image_url, featured, status
         } = body;
 
         if (!name || !slug || !price) {
@@ -57,21 +63,14 @@ export async function POST(request: NextRequest) {
                 price: parseFloat(price),
                 sale_price: sale_price ? parseFloat(sale_price) : null,
                 stock: stock || 0,
-                super_sub_category_id,
+                category_id: category_id || null,
+                sub_category_id: sub_category_id || null,
+                super_sub_category_id: super_sub_category_id || null,
                 image_url,
                 featured: featured || false,
                 status: status || 'active'
             }])
-            .select(`
-        *,
-        super_sub_category:super_sub_categories(
-          id, name, slug,
-          sub_category:sub_categories(
-            id, name, slug,
-            category:categories(id, name, slug)
-          )
-        )
-      `)
+            .select()
             .single();
 
         if (error) {
@@ -95,7 +94,8 @@ export async function PUT(request: NextRequest) {
         const body = await request.json();
         const {
             id, name, slug, sku, description, price, sale_price,
-            stock, super_sub_category_id, image_url, featured, status
+            stock, category_id, sub_category_id, super_sub_category_id,
+            image_url, featured, status
         } = body;
 
         if (!id) {
@@ -108,19 +108,14 @@ export async function PUT(request: NextRequest) {
                 name, slug, sku, description,
                 price: price ? parseFloat(price) : undefined,
                 sale_price: sale_price ? parseFloat(sale_price) : null,
-                stock, super_sub_category_id, image_url, featured, status
+                stock,
+                category_id: category_id || null,
+                sub_category_id: sub_category_id || null,
+                super_sub_category_id: super_sub_category_id || null,
+                image_url, featured, status
             })
             .eq('id', id)
-            .select(`
-        *,
-        super_sub_category:super_sub_categories(
-          id, name, slug,
-          sub_category:sub_categories(
-            id, name, slug,
-            category:categories(id, name, slug)
-          )
-        )
-      `)
+            .select()
             .single();
 
         if (error) {
