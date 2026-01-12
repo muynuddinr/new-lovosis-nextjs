@@ -119,6 +119,26 @@ export default function StoragePage() {
         return 'File';
     };
 
+    const getFolderName = (filePath: string) => {
+        const parts = filePath.split('/');
+        if (parts.length > 1) {
+            return parts[0].charAt(0).toUpperCase() + parts[0].slice(1).replace('-', ' ');
+        }
+        return 'Root';
+    };
+
+    const getFolderColor = (folderName: string) => {
+        const colors: { [key: string]: string } = {
+            'Products': 'bg-blue-100 text-blue-700',
+            'Categories': 'bg-purple-100 text-purple-700',
+            'Sub categories': 'bg-green-100 text-green-700',
+            'Super sub categories': 'bg-orange-100 text-orange-700',
+            'Catalogues': 'bg-pink-100 text-pink-700',
+            'Root': 'bg-gray-100 text-gray-700'
+        };
+        return colors[folderName] || 'bg-red-100 text-red-700';
+    };
+
     const handleDeleteFile = async (bucketName: string, fileName: string) => {
         if (!confirm('Are you sure you want to delete this file?')) return;
 
@@ -397,6 +417,7 @@ export default function StoragePage() {
                                 <thead>
                                     <tr className="border-b-2 border-red-200 bg-gradient-to-r from-red-50 to-white">
                                         <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">File</th>
+                                        <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">Folder</th>
                                         <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">Type</th>
                                         <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">Size</th>
                                         <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">Uploaded</th>
@@ -419,6 +440,11 @@ export default function StoragePage() {
                                                     </div>
                                                     <span className="text-gray-900 font-medium truncate max-w-sm">{file.name.split('/').pop()}</span>
                                                 </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-block px-3 py-1 text-xs font-bold rounded-full ${getFolderColor(getFolderName(file.name))}`}>
+                                                    📁 {getFolderName(file.name)}
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className="inline-block px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
