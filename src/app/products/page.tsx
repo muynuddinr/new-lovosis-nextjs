@@ -71,19 +71,33 @@ export default function ProductsPage() {
                             transition={{ delay: index * 0.1 }}
                         >
                             <Link href={`/products/${category.slug}`}>
-                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-lg hover:border-red-200 transition-all duration-300 group cursor-pointer h-full">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="w-14 h-14 bg-red-50 rounded-xl flex items-center justify-center group-hover:bg-red-100 transition-colors">
-                                            <FolderTree className="w-7 h-7 text-red-500" />
-                                        </div>
-                                        <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:border-red-200 transition-all duration-300 group cursor-pointer h-full">
+                                    {/* Category Image */}
+                                    <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                                        {category.image_url ? (
+                                            <img
+                                                src={category.image_url}
+                                                alt={category.name}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <FolderTree className="w-12 h-12 text-gray-300" />
+                                            </div>
+                                        )}
                                     </div>
-                                    <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-red-600 transition-colors">
-                                        {category.name}
-                                    </h3>
-                                    <p className="text-gray-500 text-sm line-clamp-2">
-                                        {category.description || 'Explore products in this category'}
-                                    </p>
+                                    {/* Category Info */}
+                                    <div className="p-5">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="text-xl font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
+                                                {category.name}
+                                            </h3>
+                                            <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
+                                        </div>
+                                        <p className="text-gray-500 text-sm line-clamp-2">
+                                            {category.description || 'Explore products in this category'}
+                                        </p>
+                                    </div>
                                 </div>
                             </Link>
                         </motion.div>
