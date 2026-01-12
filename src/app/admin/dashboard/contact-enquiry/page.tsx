@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import {
     MessageSquare,
     Eye,
@@ -10,63 +11,17 @@ import {
     Archive
 } from 'lucide-react';
 
-// Demo data for contact enquiries
-const contactEnquiries = [
-    {
-        id: '1',
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        phone: '+1 234 567 8900',
-        message: 'I am interested in your services. Please contact me for more details about pricing.',
-        status: 'pending',
-        created_at: '2024-01-10T10:30:00Z',
-    },
-    {
-        id: '2',
-        name: 'Jane Smith',
-        email: 'jane.smith@example.com',
-        phone: '+1 234 567 8901',
-        message: 'Would like to schedule a consultation regarding your products.',
-        status: 'resolved',
-        created_at: '2024-01-09T14:20:00Z',
-    },
-    {
-        id: '3',
-        name: 'Bob Wilson',
-        email: 'bob.wilson@example.com',
-        phone: '+1 234 567 8902',
-        message: 'Need assistance with my recent order. Order ID: #12345',
-        status: 'pending',
-        created_at: '2024-01-08T09:15:00Z',
-    },
-    {
-        id: '4',
-        name: 'Alice Brown',
-        email: 'alice.brown@example.com',
-        phone: '+1 234 567 8903',
-        message: 'Inquiry about partnership opportunities.',
-        status: 'archived',
-        created_at: '2024-01-07T16:45:00Z',
-    },
-    {
-        id: '5',
-        name: 'Charlie Davis',
-        email: 'charlie.davis@example.com',
-        phone: '+1 234 567 8904',
-        message: 'Technical support request for product configuration.',
-        status: 'pending',
-        created_at: '2024-01-06T11:30:00Z',
-    },
-    {
-        id: '6',
-        name: 'Eva Martinez',
-        email: 'eva.martinez@example.com',
-        phone: '+1 234 567 8905',
-        message: 'Question about delivery timeline for international shipping.',
-        status: 'resolved',
-        created_at: '2024-01-05T13:00:00Z',
-    },
-];
+interface ContactEnquiry {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+    message: string;
+    business?: string;
+    status: 'pending' | 'resolved' | 'archived';
+    created_at: string;
+}
 
 const getStatusBadge = (status: string) => {
     switch (status) {
@@ -104,6 +59,62 @@ const formatDate = (dateString: string) => {
 };
 
 export default function ContactEnquiryPage() {
+    const [enquiries, setEnquiries] = useState<ContactEnquiry[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetchEnquiries();
+    }, []);
+
+    const fetchEnquiries = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('/api/contact');
+            if (!response.ok) throw new Error('Failed to fetch enquiries');
+            const data = await response.json();
+            setEnquiries(data || []);
+            setError(null);
+        } catch (err) {
+            console.error('Fetch error:', err);
+            setError('Failed to load enquiries');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this enquiry?')) return;
+
+        try {
+            const response = await fetch(`/api/contact/${id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                setEnquiries(enquiries.filter(e => e.id !== id));
+            } else {
+                alert('Failed to delete enquiry');
+            }
+        } catch (error) {
+            console.error('Delete error:', error);
+            alert('Failed to delete enquiry');
+        }
+    };
+
+    const handleStatusChange = async (id: string, newStatus: string) => {
+        try {
+            const response = await fetch(`/api/contact/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            if (response.ok) {
+                setEnquiries(enquiries.map(e => e.id === id ? { ...e, status: newStatus as any } : e));
+            }
+        } catch (error) {
+            console.error('Status update error:', error);
+        }
+    };
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -122,73 +133,120 @@ export default function ContactEnquiryPage() {
                     </div>
                 </div>
                 <div className="text-gray-500 text-sm">
-                    Total: <span className="text-gray-900 font-semibold">{contactEnquiries.length}</span> enquiries
+                    Total: <span className="text-gray-900 font-semibold">{enquiries.length}</span> enquiries
                 </div>
             </motion.div>
 
+            {/* Error State */}
+            {error && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700"
+                >
+                    {error}
+                </motion.div>
+            )}
+
+            {/* Loading State */}
+            {loading && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="bg-white border border-gray-200 rounded-2xl p-8 text-center"
+                >
+                    <div className="inline-block">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+                    </div>
+                    <p className="text-gray-600 mt-4">Loading enquiries...</p>
+                </motion.div>
+            )}
+
+            {/* Empty State */}
+            {!loading && enquiries.length === 0 && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="bg-white border border-gray-200 rounded-2xl p-12 text-center"
+                >
+                    <MessageSquare size={48} className="mx-auto text-gray-300 mb-4" />
+                    <p className="text-gray-600">No enquiries yet</p>
+                </motion.div>
+            )}
+
             {/* Table */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white border border-gray-200 rounded-2xl overflow-hidden"
-            >
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b border-gray-100 bg-gray-50">
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Name</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Email</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Phone</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Message</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Status</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Date</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {contactEnquiries.map((enquiry, index) => (
-                                <motion.tr
-                                    key={enquiry.id}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: 0.2 + index * 0.05 }}
-                                    className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
-                                >
-                                    <td className="px-6 py-4">
-                                        <span className="text-gray-900 font-medium">{enquiry.name}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-gray-600">{enquiry.email}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-gray-600">{enquiry.phone}</span>
-                                    </td>
-                                    <td className="px-6 py-4 max-w-xs">
-                                        <span className="text-gray-500 line-clamp-2 text-sm">{enquiry.message}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {getStatusBadge(enquiry.status)}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-gray-400 text-sm">{formatDate(enquiry.created_at)}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-blue-500 hover:text-blue-600">
-                                                <Eye size={16} />
-                                            </button>
-                                            <button className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500 hover:text-red-600">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </motion.tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </motion.div>
+            {!loading && enquiries.length > 0 && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-white border border-gray-200 rounded-2xl overflow-hidden"
+                >
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-gray-100 bg-gray-50">
+                                    <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Name</th>
+                                    <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Email</th>
+                                    <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Phone</th>
+                                    <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Message</th>
+                                    <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Status</th>
+                                    <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Date</th>
+                                    <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {enquiries.map((enquiry, index) => (
+                                    <motion.tr
+                                        key={enquiry.id}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: 0.2 + index * 0.05 }}
+                                        className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <td className="px-6 py-4">
+                                            <span className="text-gray-900 font-medium">{enquiry.first_name} {enquiry.last_name}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-gray-600">{enquiry.email}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-gray-600">{enquiry.phone || 'N/A'}</span>
+                                        </td>
+                                        <td className="px-6 py-4 max-w-xs">
+                                            <span className="text-gray-500 line-clamp-2 text-sm">{enquiry.message}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <select
+                                                value={enquiry.status}
+                                                onChange={(e) => handleStatusChange(enquiry.id, e.target.value)}
+                                                className="px-2 py-1 rounded border border-gray-200 text-xs cursor-pointer"
+                                            >
+                                                <option value="pending">Pending</option>
+                                                <option value="resolved">Resolved</option>
+                                                <option value="archived">Archived</option>
+                                            </select>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-gray-400 text-sm">{formatDate(enquiry.created_at)}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleDelete(enquiry.id)}
+                                                    className="p-2 hover:bg-red-50 rounded-lg transition-colors text-red-500 hover:text-red-600"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </motion.tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </motion.div>
+            )}
         </div>
     );
 }

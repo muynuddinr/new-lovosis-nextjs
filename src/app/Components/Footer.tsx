@@ -1,7 +1,41 @@
 'use client';
 
+import { useState } from 'react';
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const handleNewsletterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setMessage('');
+
+    try {
+      const response = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage('✓ Successfully subscribed to newsletter!');
+        setEmail('');
+        setTimeout(() => setMessage(''), 3000);
+      } else {
+        setMessage(data.error || 'Failed to subscribe. Please try again.');
+      }
+    } catch (error) {
+      console.error('Newsletter error:', error);
+      setMessage('Failed to subscribe. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const footerLinks = [
     {
@@ -86,19 +120,28 @@ export default function Footer() {
             <p className="text-sm text-gray-400 mb-4">
               Get the latest news and updates from Lovosis.
             </p>
-            <form className="flex gap-2">
+            <form className="flex gap-2" onSubmit={handleNewsletterSubmit}>
               <input
                 type="email"
                 placeholder="Your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 className="flex-1 px-4 py-2 bg-gray-800 text-white placeholder-gray-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors"
+                disabled={isLoading}
+                className="px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Subscribe
+                {isLoading ? 'Subscribing...' : 'Subscribe'}
               </button>
             </form>
+            {message && (
+              <p className={`text-sm mt-2 ${message.includes('✓') ? 'text-emerald-400' : 'text-red-400'}`}>
+                {message}
+              </p>
+            )}
           </div>
         </div>
 

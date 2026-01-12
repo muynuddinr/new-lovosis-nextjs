@@ -13,7 +13,7 @@ export default function Contact() {
     message: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -21,19 +21,40 @@ export default function Contact() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    alert("Thank you for your message! We will get back to you soon.");
-    setFormData({
-      firstName: "",
-      lastName: "",
-      business: "",
-      email: "",
-      phone: "",
-      inquiryType: "",
-      message: "",
-    });
+    setSubmitting(true);
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        alert("Thank you for your message! We will get back to you soon.");
+        setFormData({
+          firstName: "",
+          lastName: "",
+          business: "",
+          email: "",
+          phone: "",
+          inquiryType: "",
+          message: "",
+        });
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to submit. Please try again.");
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+      alert("Failed to submit. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Refs for animation
@@ -143,20 +164,18 @@ export default function Contact() {
         {/* Contact Form Section */}
         <div
           ref={contactRef}
-          className={`container mx-auto px-6 py-3 md:py-4 transition-all duration-1000 ease-out ${
-            contactVisible
-              ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-8"
-          }`}
+          className={`container mx-auto px-6 py-3 md:py-4 transition-all duration-1000 ease-out ${contactVisible
+            ? "opacity-100 translate-y-0"
+            : "opacity-0 translate-y-8"
+            }`}
         >
           <div className="flex flex-col md:flex-row gap-6 max-w-6xl mx-auto">
             {/* Left side - Company Information */}
             <div
-              className={`md:w-1/2 transition-all duration-1000 delay-300 ease-out flex flex-col ${
-                contactVisible
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 -translate-x-8"
-              }`}
+              className={`md:w-1/2 transition-all duration-1000 delay-300 ease-out flex flex-col ${contactVisible
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 -translate-x-8"
+                }`}
             >
               <h2 className="text-2xl md:text-3xl font-bold mb-3 text-black">
                 REACH OUT TO US
@@ -302,11 +321,10 @@ export default function Contact() {
 
             {/* Right side - Contact Form */}
             <div
-              className={`md:w-1/2 transition-all duration-1000 delay-500 ease-out flex flex-col ${
-                contactVisible
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 translate-x-8"
-              }`}
+              className={`md:w-1/2 transition-all duration-1000 delay-500 ease-out flex flex-col ${contactVisible
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-8"
+                }`}
             >
               <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">
                 CONNECT <span className="font-normal">WITH US.</span>
@@ -379,6 +397,19 @@ export default function Contact() {
                   />
                 </div>
 
+                <div>
+                  <textarea
+                    id="message"
+                    name="message"
+                    placeholder="Your Message *"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                    rows={4}
+                    className="w-full px-3 py-2.5 text-sm bg-gray-100 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
+                  />
+                </div>
+
                 <div className="mt-auto">
                   <button
                     type="submit"
@@ -395,15 +426,13 @@ export default function Contact() {
         {/* Large Maps Section */}
         <div
           ref={mapRef}
-          className={`w-full py-3 md:py-4 transition-all duration-1000 ease-out ${
-            mapVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
+          className={`w-full py-3 md:py-4 transition-all duration-1000 ease-out ${mapVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
         >
           <div className="max-w-6xl mx-auto px-4">
             <div
-              className={`text-center mb-3 md:mb-4 transition-all duration-1000 delay-300 ease-out ${
-                mapVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-              }`}
+              className={`text-center mb-3 md:mb-4 transition-all duration-1000 delay-300 ease-out ${mapVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                }`}
             >
               <h2 className="text-xl md:text-2xl font-bold text-black mb-2">
                 FIND <span className="font-normal">OUR OFFICE</span>
@@ -416,9 +445,8 @@ export default function Contact() {
 
             {/* Map Container */}
             <div
-              className={`w-full h-[350px] md:h-[450px] overflow-hidden shadow-lg transition-all duration-1000 delay-500 ease-out ${
-                mapVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-              }`}
+              className={`w-full h-[350px] md:h-[450px] overflow-hidden shadow-lg transition-all duration-1000 delay-500 ease-out ${mapVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                }`}
             >
               {/* Google Maps Embed - Updated with correct location */}
               <iframe
