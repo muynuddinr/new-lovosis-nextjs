@@ -13,7 +13,8 @@ import {
     Layers,
     Grid3X3,
     Package,
-    FileText
+    FileText,
+    HardDrive
 } from 'lucide-react';
 
 const navItems = [
@@ -56,6 +57,11 @@ const navItems = [
         title: 'Newsletter Enquiry',
         href: '/admin/dashboard/newsletter-enquiry',
         icon: Mail,
+    },
+    {
+        title: 'Storage',
+        href: '/admin/dashboard/storage',
+        icon: HardDrive,
     },
 ];
 
