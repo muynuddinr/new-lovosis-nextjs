@@ -233,71 +233,69 @@ export default function ProductsSlugPage() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.05 }}
-                                    className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
                                 >
-                                    {/* Product Image */}
-                                    <div className="aspect-square bg-gray-100 relative overflow-hidden">
-                                        {product.image_url ? (
-                                            <img
-                                                src={product.image_url}
-                                                alt={product.name}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <Package className="w-16 h-16 text-gray-300" />
-                                            </div>
-                                        )}
-                                        {product.sale_price && (
-                                            <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                                                Sale
-                                            </span>
-                                        )}
-                                        {product.featured && (
-                                            <span className="absolute top-3 right-3 bg-amber-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                                                ★ Featured
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {/* Product Info */}
-                                    <div className="p-4">
-                                        <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-red-600 transition-colors">
-                                            {product.name}
-                                        </h3>
-
-                                        {/* Price */}
-                                        <div className="flex items-center gap-2 mb-3">
-                                            {product.sale_price ? (
-                                                <>
-                                                    <span className="text-lg font-bold text-red-600">
-                                                        {formatPrice(product.sale_price)}
-                                                    </span>
-                                                    <span className="text-sm text-gray-400 line-through">
-                                                        {formatPrice(product.price)}
-                                                    </span>
-                                                </>
+                                    <Link href={`/product/${product.slug}`} className="block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group">
+                                        {/* Product Image */}
+                                        <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                                            {product.image_url ? (
+                                                <img
+                                                    src={product.image_url}
+                                                    alt={product.name}
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                />
                                             ) : (
-                                                <span className="text-lg font-bold text-gray-900">
-                                                    {formatPrice(product.price)}
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <Package className="w-16 h-16 text-gray-300" />
+                                                </div>
+                                            )}
+                                            {product.sale_price && (
+                                                <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                                                    Sale
+                                                </span>
+                                            )}
+                                            {product.featured && (
+                                                <span className="absolute top-3 right-3 bg-amber-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                                                    ★ Featured
                                                 </span>
                                             )}
                                         </div>
 
-                                        {/* Stock Status */}
-                                        <div className="flex items-center justify-between">
-                                            <span className={`text-xs font-medium ${product.stock > 0 ? 'text-emerald-600' : 'text-red-500'
-                                                }`}>
-                                                {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                                            </span>
-                                            <button
-                                                disabled={product.stock === 0}
-                                                className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                            >
-                                                <ShoppingCart size={18} />
-                                            </button>
+                                        {/* Product Info */}
+                                        <div className="p-4">
+                                            <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-red-600 transition-colors">
+                                                {product.name}
+                                            </h3>
+
+                                            {/* Price */}
+                                            <div className="flex items-center gap-2 mb-3">
+                                                {product.sale_price ? (
+                                                    <>
+                                                        <span className="text-lg font-bold text-red-600">
+                                                            {formatPrice(product.sale_price)}
+                                                        </span>
+                                                        <span className="text-sm text-gray-400 line-through">
+                                                            {formatPrice(product.price)}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-lg font-bold text-gray-900">
+                                                        {formatPrice(product.price)}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Stock Status */}
+                                            <div className="flex items-center justify-between">
+                                                <span className={`text-xs font-medium ${product.stock > 0 ? 'text-emerald-600' : 'text-red-500'
+                                                    }`}>
+                                                    {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+                                                </span>
+                                                <span className="p-2 bg-red-50 text-red-600 rounded-lg">
+                                                    <ShoppingCart size={18} />
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
+                                    </Link>
                                 </motion.div>
                             ))}
                         </div>
