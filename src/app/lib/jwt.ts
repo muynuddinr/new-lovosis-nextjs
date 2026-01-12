@@ -1,6 +1,8 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback_secret_key_for_development');
+const secret = new TextEncoder().encode(
+    process.env.JWT_SECRET || process.env.NEXT_PUBLIC_APP_URL || 'default_secure_key_2024'
+);
 
 export interface JWTPayload {
     userId: string;
