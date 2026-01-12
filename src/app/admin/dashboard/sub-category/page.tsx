@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Layers,
@@ -11,7 +11,8 @@ import {
     X,
     Loader2,
     Check,
-    ChevronRight
+    ChevronRight,
+    Upload
 } from 'lucide-react';
 
 interface Category {
@@ -25,6 +26,7 @@ interface SubCategory {
     name: string;
     slug: string;
     description: string;
+    image_url: string | null;
     category_id: string;
     category: Category;
     status: string;
@@ -47,11 +49,13 @@ export default function SubCategoryPage() {
     const [showModal, setShowModal] = useState(false);
     const [editingSubCategory, setEditingSubCategory] = useState<SubCategory | null>(null);
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
         category_id: '',
         description: '',
+        image_url: '',
         status: 'active'
     });
 
@@ -88,6 +92,36 @@ export default function SubCategoryPage() {
 
     const generateSlug = (name: string) => {
         return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const formDataUpload = new FormData();
+            formDataUpload.append('file', file);
+            formDataUpload.append('folder', 'sub-categories');
+
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formDataUpload,
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setFormData({ ...formData, image_url: data.url });
+            } else {
+                const data = await response.json();
+                alert(data.error || 'Failed to upload image');
+            }
+        } catch (error) {
+            console.error('Upload failed:', error);
+            alert('Failed to upload image');
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -145,6 +179,7 @@ export default function SubCategoryPage() {
             slug: subCategory.slug,
             category_id: subCategory.category_id,
             description: subCategory.description || '',
+            image_url: subCategory.image_url || '',
             status: subCategory.status
         });
         setShowModal(true);
@@ -152,14 +187,13 @@ export default function SubCategoryPage() {
 
     const openCreateModal = () => {
         setEditingSubCategory(null);
-        setFormData({ name: '', slug: '', category_id: '', description: '', status: 'active' });
+        setFormData({ name: '', slug: '', category_id: '', description: '', image_url: '', status: 'active' });
         setShowModal(true);
     };
 
     const closeModal = () => {
         setShowModal(false);
         setEditingSubCategory(null);
-        setFormData({ name: '', slug: '', category_id: '', description: '', status: 'active' });
     };
 
     const filteredSubCategories = subCategories.filter(subCat =>
@@ -167,11 +201,7 @@ export default function SubCategoryPage() {
         subCat.category?.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Get selected category name for display
-    const getSelectedCategoryName = () => {
-        const cat = categories.find(c => c.id === formData.category_id);
-        return cat?.name || 'None selected';
-    };
+    const getSelectedCategoryName = () => categories.find(c => c.id === formData.category_id)?.name || '';
 
     if (loading) {
         return (
@@ -212,63 +242,48 @@ export default function SubCategoryPage() {
                 />
             </div>
 
-            {/* Table */}
-            <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead>
-                            <tr className="border-b border-gray-100 bg-gray-50">
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Sub Category</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Parent Category</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Description</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Status</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Created</th>
-                                <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredSubCategories.map((subCat) => (
-                                <tr key={subCat.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <span className="text-gray-900 font-medium">{subCat.name}</span>
-                                        <span className="block text-xs text-gray-400 font-mono">{subCat.slug}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2 text-gray-600">
-                                            <span className="text-red-500 font-medium">{subCat.category?.name}</span>
-                                            <ChevronRight size={14} className="text-gray-300" />
-                                            <span>{subCat.name}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 max-w-xs">
-                                        <span className="text-gray-500 text-sm line-clamp-1">{subCat.description || '-'}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${subCat.status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'}`}>
-                                            {subCat.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-gray-400 text-sm">{formatDate(subCat.created_at)}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <button onClick={() => openEditModal(subCat)} className="p-2 hover:bg-gray-100 rounded-lg text-blue-500"><Edit2 size={16} /></button>
-                                            <button onClick={() => handleDelete(subCat.id)} className="p-2 hover:bg-red-50 rounded-lg text-red-500"><Trash2 size={16} /></button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredSubCategories.map((subCat, index) => (
+                    <motion.div
+                        key={subCat.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 group"
+                    >
+                        <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                            {subCat.image_url ? (
+                                <img src={subCat.image_url} alt={subCat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <Layers size={48} className="text-gray-300" />
+                                </div>
+                            )}
+                            <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-xs">
+                                <span className="text-red-500 font-medium">{subCat.category?.name}</span>
+                            </div>
+                        </div>
+                        <div className="p-4">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-1">{subCat.name}</h3>
+                            <p className="text-gray-500 text-sm mb-3 line-clamp-2">{subCat.description || 'No description'}</p>
+                            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+                                <button onClick={() => openEditModal(subCat)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-600">
+                                    <Edit2 size={14} /> Edit
+                                </button>
+                                <button onClick={() => handleDelete(subCat.id)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">
+                                    <Trash2 size={14} /> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </motion.div>
+                ))}
             </div>
 
             {filteredSubCategories.length === 0 && (
                 <div className="text-center py-12">
                     <Layers className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                     <h3 className="text-xl font-semibold text-gray-600 mb-2">No sub categories found</h3>
-                    <p className="text-gray-400">Create a category first, then add sub categories</p>
                 </div>
             )}
 
@@ -276,18 +291,16 @@ export default function SubCategoryPage() {
             <AnimatePresence>
                 {showModal && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeModal}>
-                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
-                            <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} onClick={(e) => e.stopPropagation()} className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+                            <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white">
                                 <h2 className="text-xl font-semibold text-gray-900">{editingSubCategory ? 'Edit Sub Category' : 'Add Sub Category'}</h2>
                                 <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-lg"><X size={20} className="text-gray-500" /></button>
                             </div>
 
                             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                                {/* Step 1: Select Parent Category */}
+                                {/* Step 1: Select Category */}
                                 <div className="bg-gray-50 rounded-xl p-4">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        Step 1: Select Parent Category
-                                    </label>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Step 1: Select Category</label>
                                     <select
                                         value={formData.category_id}
                                         onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
@@ -306,74 +319,78 @@ export default function SubCategoryPage() {
                                     )}
                                 </div>
 
-                                {/* Step 2: Sub Category Details (only show if category selected) */}
                                 {formData.category_id && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        className="space-y-4"
-                                    >
-                                        <div className="bg-blue-50 rounded-xl p-4 space-y-4">
-                                            <label className="block text-sm font-semibold text-gray-700">
-                                                Step 2: Sub Category Details
-                                            </label>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-600 mb-1">Name</label>
-                                                <input
-                                                    type="text"
-                                                    value={formData.name}
-                                                    onChange={(e) => setFormData({
-                                                        ...formData,
-                                                        name: e.target.value,
-                                                        slug: editingSubCategory ? formData.slug : generateSlug(e.target.value)
-                                                    })}
-                                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
-                                                    placeholder="Sub category name"
-                                                    required
-                                                />
+                                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                                        {/* Image Upload */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Image</label>
+                                            <div className="border-2 border-dashed border-gray-200 rounded-xl overflow-hidden hover:border-red-300 transition-colors">
+                                                {formData.image_url ? (
+                                                    <div className="relative aspect-video">
+                                                        <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                                                        <button type="button" onClick={() => setFormData({ ...formData, image_url: '' })} className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600">
+                                                            <X size={14} />
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <label className="flex flex-col items-center justify-center py-6 cursor-pointer hover:bg-gray-50">
+                                                        {uploading ? <Loader2 size={32} className="text-gray-400 animate-spin mb-2" /> : <Upload size={32} className="text-gray-400 mb-2" />}
+                                                        <span className="text-sm text-gray-500">{uploading ? 'Uploading...' : 'Click to upload'}</span>
+                                                        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploading} />
+                                                    </label>
+                                                )}
                                             </div>
+                                        </div>
 
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-600 mb-1">Slug</label>
-                                                <input
-                                                    type="text"
-                                                    value={formData.slug}
-                                                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl font-mono text-sm focus:outline-none focus:border-red-500"
-                                                    placeholder="sub-category-slug"
-                                                    required
-                                                />
-                                            </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                            <input
+                                                type="text"
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value, slug: editingSubCategory ? formData.slug : generateSlug(e.target.value) })}
+                                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
+                                                required
+                                            />
+                                        </div>
 
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-600 mb-1">Description</label>
-                                                <textarea
-                                                    value={formData.description}
-                                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl resize-none focus:outline-none focus:border-red-500"
-                                                    rows={2}
-                                                />
-                                            </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+                                            <input
+                                                type="text"
+                                                value={formData.slug}
+                                                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl font-mono text-sm focus:outline-none focus:border-red-500"
+                                                required
+                                            />
+                                        </div>
 
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-600 mb-1">Status</label>
-                                                <select
-                                                    value={formData.status}
-                                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                                    className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
-                                                >
-                                                    <option value="active">Active</option>
-                                                    <option value="inactive">Inactive</option>
-                                                </select>
-                                            </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                            <textarea
+                                                value={formData.description}
+                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl resize-none focus:outline-none focus:border-red-500"
+                                                rows={2}
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                            <select
+                                                value={formData.status}
+                                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
+                                            >
+                                                <option value="active">Active</option>
+                                                <option value="inactive">Inactive</option>
+                                            </select>
                                         </div>
                                     </motion.div>
                                 )}
 
                                 <div className="flex gap-3 pt-4">
                                     <button type="button" onClick={closeModal} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50">Cancel</button>
-                                    <button type="submit" disabled={saving || !formData.category_id} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50">
+                                    <button type="submit" disabled={saving || uploading || !formData.category_id} className="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl flex items-center justify-center gap-2 disabled:opacity-50">
                                         {saving ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />}
                                         {saving ? 'Saving...' : 'Save'}
                                     </button>

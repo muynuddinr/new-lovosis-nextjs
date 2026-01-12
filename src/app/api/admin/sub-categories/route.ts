@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { name, slug, category_id, description, status } = body;
+        const { name, slug, category_id, description, image_url, status } = body;
 
         if (!name || !slug || !category_id) {
             return NextResponse.json({ error: 'Name, slug, and category_id are required' }, { status: 400 });
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
         const { data, error } = await supabase
             .from('sub_categories')
-            .insert([{ name, slug, category_id, description, status: status || 'active' }])
+            .insert([{ name, slug, category_id, description, image_url, status: status || 'active' }])
             .select(`*, category:categories(id, name, slug)`)
             .single();
 
@@ -66,7 +66,7 @@ export async function PUT(request: NextRequest) {
         }
 
         const body = await request.json();
-        const { id, name, slug, category_id, description, status } = body;
+        const { id, name, slug, category_id, description, image_url, status } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'Sub Category ID is required' }, { status: 400 });
@@ -74,7 +74,7 @@ export async function PUT(request: NextRequest) {
 
         const { data, error } = await supabase
             .from('sub_categories')
-            .update({ name, slug, category_id, description, status })
+            .update({ name, slug, category_id, description, image_url, status })
             .eq('id', id)
             .select(`*, category:categories(id, name, slug)`)
             .single();
