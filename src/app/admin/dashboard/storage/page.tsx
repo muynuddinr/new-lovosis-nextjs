@@ -237,12 +237,12 @@ export default function StoragePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-gradient-to-br from-white to-red-50 border-2 border-red-200 rounded-2xl p-8 shadow-lg"
+                className="bg-linear-to-br from-white to-red-50 border-2 border-red-200 rounded-2xl p-8 shadow-lg"
             >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <motion.div 
                         whileHover={{ translateY: -4 }}
-                        className="bg-gradient-to-br from-red-50 to-white rounded-xl p-6 border-2 border-red-100 shadow-md"
+                        className="bg-linear-to-br from-red-50 to-white rounded-xl p-6 border-2 border-red-100 shadow-md"
                     >
                         <div className="flex items-center justify-between mb-2">
                             <p className="text-red-700 text-sm font-bold uppercase tracking-wide">Storage Used</p>
@@ -255,7 +255,7 @@ export default function StoragePage() {
                     </motion.div>
                     <motion.div 
                         whileHover={{ translateY: -4 }}
-                        className="bg-gradient-to-br from-red-50 to-white rounded-xl p-6 border-2 border-red-100 shadow-md"
+                        className="bg-linear-to-br from-red-50 to-white rounded-xl p-6 border-2 border-red-100 shadow-md"
                     >
                         <div className="flex items-center justify-between mb-2">
                             <p className="text-red-700 text-sm font-bold uppercase tracking-wide">Free Limit</p>
@@ -268,7 +268,7 @@ export default function StoragePage() {
                     </motion.div>
                     <motion.div 
                         whileHover={{ translateY: -4 }}
-                        className="bg-gradient-to-br from-red-50 to-white rounded-xl p-6 border-2 border-red-100 shadow-md"
+                        className="bg-linear-to-br from-red-50 to-white rounded-xl p-6 border-2 border-red-100 shadow-md"
                     >
                         <div className="flex items-center justify-between mb-2">
                             <p className="text-red-700 text-sm font-bold uppercase tracking-wide">Remaining</p>
@@ -296,10 +296,10 @@ export default function StoragePage() {
                             animate={{ width: `${Math.min((totalStorageUsed / 1073741824) * 100, 100)}%` }}
                             transition={{ duration: 0.8, ease: "easeOut" }}
                             className={`h-6 rounded-full transition-all flex items-center justify-end pr-2 ${(totalStorageUsed / 1073741824) * 100 > 80
-                                ? 'bg-gradient-to-r from-red-600 to-red-500'
+                                ? 'bg-linear-to-r from-red-600 to-red-500'
                                 : (totalStorageUsed / 1073741824) * 100 > 50
-                                    ? 'bg-gradient-to-r from-red-500 to-red-400'
-                                    : 'bg-gradient-to-r from-red-400 to-orange-400'
+                                    ? 'bg-linear-to-r from-red-500 to-red-400'
+                                    : 'bg-linear-to-r from-red-400 to-orange-400'
                                 }`}
                         >
                             {(totalStorageUsed / 1073741824) * 100 > 15 && (
@@ -315,7 +315,7 @@ export default function StoragePage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="mt-6 p-4 bg-red-100 border-2 border-red-400 rounded-xl flex items-start gap-3"
                     >
-                        <AlertCircle className="text-red-700 mt-0.5 flex-shrink-0" size={20} />
+                        <AlertCircle className="text-red-700 mt-0.5 shrink-0" size={20} />
                         <div>
                             <p className="text-red-900 font-bold">Storage Limit Warning</p>
                             <p className="text-red-800 text-sm mt-1">You are using over 80% of your free storage quota. Consider upgrading your plan.</p>
@@ -331,7 +331,7 @@ export default function StoragePage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-red-50 border-2 border-red-300 rounded-2xl p-4 text-red-800 shadow-md flex items-start gap-3"
                 >
-                    <AlertCircle size={20} className="text-red-600 mt-0.5 flex-shrink-0" />
+                    <AlertCircle size={20} className="text-red-600 mt-0.5 shrink-0" />
                     <div>
                         <p className="font-bold">Error</p>
                         <p className="text-sm">{error}</p>
@@ -346,7 +346,7 @@ export default function StoragePage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-red-50 border-2 border-red-300 rounded-2xl p-4 text-red-800 shadow-md flex items-start gap-3"
                 >
-                    <AlertCircle size={20} className="text-red-600 mt-0.5 flex-shrink-0" />
+                    <AlertCircle size={20} className="text-red-600 mt-0.5 shrink-0" />
                     <div>
                         <p className="font-bold">Upload Error</p>
                         <p className="text-sm">{uploadError}</p>
@@ -379,7 +379,7 @@ export default function StoragePage() {
                     className="bg-white border-2 border-red-200 rounded-2xl overflow-hidden shadow-xl"
                 >
                     {/* Bucket Header */}
-                    <div className="p-8 bg-gradient-to-r from-red-600 via-red-500 to-red-400 border-b-2 border-red-300">
+                    <div className="p-8 bg-linear-to-r from-red-600 via-red-500 to-red-400 border-b-2 border-red-300">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center">
@@ -415,7 +415,7 @@ export default function StoragePage() {
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead>
-                                    <tr className="border-b-2 border-red-200 bg-gradient-to-r from-red-50 to-white">
+                                    <tr className="border-b-2 border-red-200 bg-linear-to-r from-red-50 to-white">
                                         <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">File</th>
                                         <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">Folder</th>
                                         <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">Type</th>
@@ -435,7 +435,7 @@ export default function StoragePage() {
                                         >
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                    <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
                                                         {getFileIcon(file.name)}
                                                     </div>
                                                     <span className="text-gray-900 font-medium truncate max-w-sm">{file.name.split('/').pop()}</span>

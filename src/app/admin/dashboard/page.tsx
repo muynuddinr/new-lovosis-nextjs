@@ -143,7 +143,7 @@ export default function DashboardPage() {
                             <Link href={stat.href}>
                                 <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-lg hover:shadow-red-100 transition-all duration-300 group cursor-pointer">
                                     <div className="flex items-start justify-between mb-4">
-                                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
+                                        <div className={`w-12 h-12 rounded-xl bg-linear-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
                                             <Icon size={24} className="text-white" />
                                         </div>
                                     </div>

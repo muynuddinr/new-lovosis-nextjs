@@ -167,7 +167,7 @@ export default function Header() {
                     transition={{ delay: 0.4 }}
                     className="flex items-center gap-3 pl-4 border-l border-gray-200"
                 >
-                    <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg shadow-red-500/20">
+                    <div className="w-10 h-10 bg-linear-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center shadow-lg shadow-red-500/20">
                         <User size={18} className="text-white" />
                     </div>
                     <div>

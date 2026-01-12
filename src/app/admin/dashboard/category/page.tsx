@@ -192,7 +192,7 @@ export default function CategoryPage() {
             {/* Header */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/30">
+                    <div className="w-12 h-12 bg-linear-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/30">
                         <FolderTree size={24} className="text-white" />
                     </div>
                     <div>
@@ -200,7 +200,7 @@ export default function CategoryPage() {
                         <p className="text-gray-500 text-sm">{categories.length} categories</p>
                     </div>
                 </div>
-                <button onClick={openCreateModal} className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white font-medium rounded-xl shadow-lg shadow-red-500/30">
+                <button onClick={openCreateModal} className="flex items-center gap-2 px-4 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white font-medium rounded-xl shadow-lg shadow-red-500/30">
                     <Plus size={18} />
                     Add Category
                 </button>

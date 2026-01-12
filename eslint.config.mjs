@@ -5,6 +5,18 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  // Disable tailwind class suggestions that are false positives
+  {
+    rules: {
+      "@next/next/no-html-link-for-pages": "off",
+    },
+    settings: {
+      tailwindcss: {
+        callees: ["clsx", "classnames"],
+        ignoredKeys: ["nextVariant"],
+      },
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

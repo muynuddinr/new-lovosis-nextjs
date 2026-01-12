@@ -124,7 +124,7 @@ export default function ContactEnquiryPage() {
                 className="flex items-center justify-between"
             >
                 <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/30">
+                    <div className="w-12 h-12 bg-linear-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/30">
                         <MessageSquare size={24} className="text-white" />
                     </div>
                     <div>
