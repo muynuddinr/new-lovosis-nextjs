@@ -47,26 +47,24 @@ export async function POST(request: NextRequest) {
 
         const body = await request.json();
         const {
-            name, slug, sku, description, price, sale_price,
-            stock, category_id, sub_category_id, super_sub_category_id,
-            image_url, featured, status
+            name, slug, description, key_features,
+            category_id, sub_category_id, super_sub_category_id,
+            image_url, image_url_2, image_url_3, catalogue_pdf_url,
+            featured, status
         } = body;
 
-        if (!name || !slug || !price) {
-            return NextResponse.json({ error: 'Name, slug, and price are required' }, { status: 400 });
+        if (!name || !slug) {
+            return NextResponse.json({ error: 'Name and slug are required' }, { status: 400 });
         }
 
         const { data, error } = await supabase
             .from('products')
             .insert([{
-                name, slug, sku, description,
-                price: parseFloat(price),
-                sale_price: sale_price ? parseFloat(sale_price) : null,
-                stock: stock || 0,
+                name, slug, description, key_features,
                 category_id: category_id || null,
                 sub_category_id: sub_category_id || null,
                 super_sub_category_id: super_sub_category_id || null,
-                image_url,
+                image_url, image_url_2, image_url_3, catalogue_pdf_url,
                 featured: featured || false,
                 status: status || 'active'
             }])
@@ -93,9 +91,10 @@ export async function PUT(request: NextRequest) {
 
         const body = await request.json();
         const {
-            id, name, slug, sku, description, price, sale_price,
-            stock, category_id, sub_category_id, super_sub_category_id,
-            image_url, featured, status
+            id, name, slug, description, key_features,
+            category_id, sub_category_id, super_sub_category_id,
+            image_url, image_url_2, image_url_3, catalogue_pdf_url,
+            featured, status
         } = body;
 
         if (!id) {
@@ -105,14 +104,12 @@ export async function PUT(request: NextRequest) {
         const { data, error } = await supabase
             .from('products')
             .update({
-                name, slug, sku, description,
-                price: price ? parseFloat(price) : undefined,
-                sale_price: sale_price ? parseFloat(sale_price) : null,
-                stock,
+                name, slug, description, key_features,
                 category_id: category_id || null,
                 sub_category_id: sub_category_id || null,
                 super_sub_category_id: super_sub_category_id || null,
-                image_url, featured, status
+                image_url, image_url_2, image_url_3, catalogue_pdf_url,
+                featured, status
             })
             .eq('id', id)
             .select()

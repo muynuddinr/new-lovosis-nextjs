@@ -3,22 +3,18 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Package,
     ChevronRight,
     Loader2,
     Home,
-    ShoppingCart,
-    Heart,
-    Share2,
     Star,
     Check,
-    Truck,
-    Shield,
-    RotateCcw,
-    Minus,
-    Plus
+    X,
+    FileText,
+    ChevronLeft,
+    Download
 } from 'lucide-react';
 
 interface Breadcrumb {
@@ -30,22 +26,15 @@ interface Product {
     id: string;
     name: string;
     slug: string;
-    sku: string;
     description: string;
-    price: number;
-    sale_price: number | null;
-    stock: number;
+    key_features: string;
     image_url: string | null;
+    image_url_2: string | null;
+    image_url_3: string | null;
+    catalogue_pdf_url: string | null;
     featured: boolean;
     status: string;
 }
-
-const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
-    }).format(price);
-};
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -55,7 +44,15 @@ export default function ProductDetailPage() {
     const [breadcrumb, setBreadcrumb] = useState<Breadcrumb[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
-    const [quantity, setQuantity] = useState(1);
+    const [activeImage, setActiveImage] = useState(0);
+    const [showCatalogueModal, setShowCatalogueModal] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [formData, setFormData] = useState({
+        name: '',
+        phone: '',
+        email: ''
+    });
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -80,15 +77,62 @@ export default function ProductDetailPage() {
         if (slug) fetchProduct();
     }, [slug]);
 
-    const increaseQuantity = () => {
-        if (product && quantity < product.stock) {
-            setQuantity(q => q + 1);
-        }
+    // Get all available images
+    const getImages = () => {
+        if (!product) return [];
+        const images = [];
+        if (product.image_url) images.push(product.image_url);
+        if (product.image_url_2) images.push(product.image_url_2);
+        if (product.image_url_3) images.push(product.image_url_3);
+        return images;
     };
 
-    const decreaseQuantity = () => {
-        if (quantity > 1) {
-            setQuantity(q => q - 1);
+    const images = getImages();
+
+    const handleCatalogueSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setSubmitting(true);
+
+        try {
+            const response = await fetch('/api/catalogue-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    product_id: product?.id,
+                    product_name: product?.name,
+                    customer_name: formData.name,
+                    customer_phone: formData.phone,
+                    customer_email: formData.email,
+                    catalogue_pdf_url: product?.catalogue_pdf_url
+                })
+            });
+
+            if (response.ok) {
+                setSubmitted(true);
+                // Download PDF
+                if (product?.catalogue_pdf_url) {
+                    const link = document.createElement('a');
+                    link.href = product.catalogue_pdf_url;
+                    link.download = `${product.name}-catalogue.pdf`;
+                    link.target = '_blank';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+                // Reset after delay
+                setTimeout(() => {
+                    setShowCatalogueModal(false);
+                    setSubmitted(false);
+                    setFormData({ name: '', phone: '', email: '' });
+                }, 2000);
+            } else {
+                alert('Failed to submit request');
+            }
+        } catch (err) {
+            console.error('Submit error:', err);
+            alert('Failed to submit request');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -112,9 +156,7 @@ export default function ProductDetailPage() {
         );
     }
 
-    const discount = product.sale_price
-        ? Math.round((1 - product.sale_price / product.price) * 100)
-        : 0;
+    const features = product.key_features?.split('\n').filter(f => f.trim()) || [];
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -148,173 +190,204 @@ export default function ProductDetailPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
-                        {/* Product Image */}
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="aspect-square bg-gray-100 relative"
-                        >
-                            {product.image_url ? (
-                                <img
-                                    src={product.image_url}
-                                    alt={product.name}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <Package className="w-32 h-32 text-gray-300" />
+                        {/* Image Gallery */}
+                        <div className="p-6 lg:p-8">
+                            {/* Main Image */}
+                            <motion.div
+                                key={activeImage}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="aspect-square bg-gray-100 rounded-xl relative overflow-hidden mb-4"
+                            >
+                                {images.length > 0 ? (
+                                    <img
+                                        src={images[activeImage]}
+                                        alt={product.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <Package className="w-32 h-32 text-gray-300" />
+                                    </div>
+                                )}
+                                {product.featured && (
+                                    <span className="absolute top-4 right-4 bg-amber-500 text-white text-sm font-semibold px-3 py-1.5 rounded-full flex items-center gap-1">
+                                        <Star size={14} /> Featured
+                                    </span>
+                                )}
+                            </motion.div>
+
+                            {/* Thumbnails */}
+                            {images.length > 1 && (
+                                <div className="flex gap-3">
+                                    {images.map((img, index) => (
+                                        <button
+                                            key={index}
+                                            onClick={() => setActiveImage(index)}
+                                            className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${activeImage === index ? 'border-red-500' : 'border-gray-200 hover:border-gray-300'
+                                                }`}
+                                        >
+                                            <img src={img} alt="" className="w-full h-full object-cover" />
+                                        </button>
+                                    ))}
                                 </div>
                             )}
-                            {product.sale_price && (
-                                <span className="absolute top-4 left-4 bg-red-500 text-white text-sm font-semibold px-3 py-1.5 rounded-full">
-                                    {discount}% OFF
-                                </span>
-                            )}
-                            {product.featured && (
-                                <span className="absolute top-4 right-4 bg-amber-500 text-white text-sm font-semibold px-3 py-1.5 rounded-full flex items-center gap-1">
-                                    <Star size={14} /> Featured
-                                </span>
-                            )}
-                        </motion.div>
+                        </div>
 
                         {/* Product Info */}
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="p-8 lg:p-12"
+                            className="p-6 lg:p-8 lg:border-l border-gray-100"
                         >
-                            {/* SKU */}
-                            {product.sku && (
-                                <p className="text-gray-400 text-sm mb-2">SKU: {product.sku}</p>
-                            )}
-
                             {/* Title */}
-                            <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
-
-                            {/* Rating Placeholder */}
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className="flex items-center">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <Star key={star} size={18} className="text-amber-400 fill-amber-400" />
-                                    ))}
-                                </div>
-                                <span className="text-gray-500 text-sm">(5.0) · 24 Reviews</span>
-                            </div>
-
-                            {/* Price */}
-                            <div className="flex items-center gap-4 mb-6">
-                                {product.sale_price ? (
-                                    <>
-                                        <span className="text-3xl font-bold text-red-600">
-                                            {formatPrice(product.sale_price)}
-                                        </span>
-                                        <span className="text-xl text-gray-400 line-through">
-                                            {formatPrice(product.price)}
-                                        </span>
-                                        <span className="px-2 py-1 bg-red-100 text-red-600 text-sm font-medium rounded">
-                                            Save {formatPrice(product.price - product.sale_price)}
-                                        </span>
-                                    </>
-                                ) : (
-                                    <span className="text-3xl font-bold text-gray-900">
-                                        {formatPrice(product.price)}
-                                    </span>
-                                )}
-                            </div>
+                            <h1 className="text-3xl font-bold text-gray-900 mb-6">{product.name}</h1>
 
                             {/* Description */}
                             {product.description && (
-                                <p className="text-gray-600 mb-8 leading-relaxed">
-                                    {product.description}
-                                </p>
+                                <div className="mb-8">
+                                    <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
+                                    <p className="text-gray-600 leading-relaxed">{product.description}</p>
+                                </div>
                             )}
 
-                            {/* Stock Status */}
-                            <div className="flex items-center gap-2 mb-6">
-                                {product.stock > 0 ? (
-                                    <>
-                                        <Check size={18} className="text-emerald-500" />
-                                        <span className="text-emerald-600 font-medium">In Stock</span>
-                                        <span className="text-gray-400">({product.stock} available)</span>
-                                    </>
-                                ) : (
-                                    <span className="text-red-500 font-medium">Out of Stock</span>
-                                )}
-                            </div>
-
-                            {/* Quantity Selector */}
-                            <div className="flex items-center gap-4 mb-8">
-                                <span className="text-gray-700 font-medium">Quantity:</span>
-                                <div className="flex items-center border border-gray-200 rounded-lg">
-                                    <button
-                                        onClick={decreaseQuantity}
-                                        disabled={quantity <= 1}
-                                        className="p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <Minus size={18} />
-                                    </button>
-                                    <span className="w-12 text-center font-medium">{quantity}</span>
-                                    <button
-                                        onClick={increaseQuantity}
-                                        disabled={quantity >= product.stock}
-                                        className="p-3 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <Plus size={18} />
-                                    </button>
+                            {/* Key Features */}
+                            {features.length > 0 && (
+                                <div className="mb-8">
+                                    <h2 className="text-lg font-semibold text-gray-900 mb-3">Key Features</h2>
+                                    <ul className="space-y-2">
+                                        {features.map((feature, index) => (
+                                            <li key={index} className="flex items-start gap-3">
+                                                <Check size={18} className="text-emerald-500 mt-0.5 flex-shrink-0" />
+                                                <span className="text-gray-600">{feature}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Action Buttons */}
-                            <div className="flex gap-4 mb-8">
+                            {/* Request Catalogue Button */}
+                            {product.catalogue_pdf_url && (
                                 <button
-                                    disabled={product.stock === 0}
-                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    onClick={() => setShowCatalogueModal(true)}
+                                    className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 transition-all"
                                 >
-                                    <ShoppingCart size={20} />
-                                    Add to Cart
+                                    <FileText size={20} />
+                                    Request Catalogue
                                 </button>
-                                <button className="p-4 border border-gray-200 hover:border-red-300 hover:bg-red-50 rounded-xl transition-colors">
-                                    <Heart size={20} className="text-gray-600" />
-                                </button>
-                                <button className="p-4 border border-gray-200 hover:border-gray-300 rounded-xl transition-colors">
-                                    <Share2 size={20} className="text-gray-600" />
-                                </button>
-                            </div>
-
-                            {/* Features */}
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-8 border-t border-gray-100">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                                        <Truck size={20} className="text-blue-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">Free Shipping</p>
-                                        <p className="text-xs text-gray-500">On orders over $50</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
-                                        <Shield size={20} className="text-emerald-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">Warranty</p>
-                                        <p className="text-xs text-gray-500">1 Year Warranty</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
-                                        <RotateCcw size={20} className="text-amber-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">Easy Returns</p>
-                                        <p className="text-xs text-gray-500">30-Day Returns</p>
-                                    </div>
-                                </div>
-                            </div>
+                            )}
                         </motion.div>
                     </div>
                 </div>
             </div>
+
+            {/* Catalogue Request Modal */}
+            <AnimatePresence>
+                {showCatalogueModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                        onClick={() => !submitting && setShowCatalogueModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+                        >
+                            {submitted ? (
+                                <div className="p-8 text-center">
+                                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Check size={32} className="text-emerald-500" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Thank You!</h3>
+                                    <p className="text-gray-500">Your catalogue is downloading...</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                                        <h2 className="text-xl font-semibold text-gray-900">Request Catalogue</h2>
+                                        <button
+                                            onClick={() => setShowCatalogueModal(false)}
+                                            className="p-2 hover:bg-gray-100 rounded-lg"
+                                        >
+                                            <X size={20} className="text-gray-500" />
+                                        </button>
+                                    </div>
+
+                                    <form onSubmit={handleCatalogueSubmit} className="p-6 space-y-4">
+                                        {/* Product Name (readonly) */}
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Product</label>
+                                            <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
+                                                <Package size={18} className="text-gray-400" />
+                                                <span className="text-gray-700 font-medium">{product.name}</span>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Your Name <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                value={formData.name}
+                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
+                                                placeholder="John Doe"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="tel"
+                                                value={formData.phone}
+                                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
+                                                placeholder="+1 234 567 8900"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Email <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="email"
+                                                value={formData.email}
+                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
+                                                placeholder="john@example.com"
+                                                required
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={submitting}
+                                            className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl disabled:opacity-50 transition-all"
+                                        >
+                                            {submitting ? (
+                                                <>
+                                                    <Loader2 size={20} className="animate-spin" />
+                                                    Submitting...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Download size={20} />
+                                                    Download Catalogue
+                                                </>
+                                            )}
+                                        </button>
+                                    </form>
+                                </>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -12,7 +12,8 @@ import {
     FolderTree,
     Layers,
     Grid3X3,
-    Package
+    Package,
+    FileText
 } from 'lucide-react';
 
 const navItems = [
@@ -40,6 +41,11 @@ const navItems = [
         title: 'Products',
         href: '/admin/dashboard/products',
         icon: Package,
+    },
+    {
+        title: 'Catalogue Requests',
+        href: '/admin/dashboard/catalogue-requests',
+        icon: FileText,
     },
     {
         title: 'Contact Enquiry',
@@ -97,8 +103,8 @@ export default function Sidebar() {
                             <Link
                                 href={item.href}
                                 className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 group ${isActive
-                                        ? 'bg-red-50 border border-red-200 text-red-600'
-                                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                    ? 'bg-red-50 border border-red-200 text-red-600'
+                                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                                     }`}
                             >
                                 <Icon
