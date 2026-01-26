@@ -49,11 +49,14 @@ interface ApiResponse {
     breadcrumb: Breadcrumb[];
 }
 
-const formatPrice = (price: number) => {
+const formatPrice = (price: number | string) => {
+    const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+    if (isNaN(numPrice)) return 'Price not available';
+    
     return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
-    }).format(price);
+    }).format(numPrice);
 };
 
 export default function ProductsSlugPage() {
@@ -262,38 +265,9 @@ export default function ProductsSlugPage() {
 
                                         {/* Product Info */}
                                         <div className="p-4">
-                                            <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-red-600 transition-colors">
+                                            <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors">
                                                 {product.name}
                                             </h3>
-
-                                            {/* Price */}
-                                            <div className="flex items-center gap-2 mb-3">
-                                                {product.sale_price ? (
-                                                    <>
-                                                        <span className="text-lg font-bold text-red-600">
-                                                            {formatPrice(product.sale_price)}
-                                                        </span>
-                                                        <span className="text-sm text-gray-400 line-through">
-                                                            {formatPrice(product.price)}
-                                                        </span>
-                                                    </>
-                                                ) : (
-                                                    <span className="text-lg font-bold text-gray-900">
-                                                        {formatPrice(product.price)}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            {/* Stock Status */}
-                                            <div className="flex items-center justify-between">
-                                                <span className={`text-xs font-medium ${product.stock > 0 ? 'text-emerald-600' : 'text-red-500'
-                                                    }`}>
-                                                    {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
-                                                </span>
-                                                <span className="p-2 bg-red-50 text-red-600 rounded-lg">
-                                                    <ShoppingCart size={18} />
-                                                </span>
-                                            </div>
                                         </div>
                                     </Link>
                                 </motion.div>

@@ -8,6 +8,7 @@ import Services from './Components/Ourservices';
 import ShuffleHero from './Components/ShuffleHero';
 import Faq from './Components/Faq';
 import Footer from './Components/Footer';
+import FeaturedProducts from './Components/FeaturedProducts';
 
 export default function Home() {
   return (
@@ -15,10 +16,12 @@ export default function Home() {
       <Loader />
 
       <Banner />
-      <ShuffleHero />
+       <FeaturedProducts />
+      {/* <ShuffleHero /> */}
       {/* <Hero /> */}
       <Image />
          <Services />
+     
       <Why />
       <Faq />
 

@@ -7,9 +7,9 @@ const AboutUsPage = () => {
   const [expandedSection, setExpandedSection] = useState('about');
 
   const sections = [
-    { id: 'about', number: '01', title: 'About US', description: 'Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat sit amet.' },
-    { id: 'mission', number: '02', title: 'Our Mission', description: '' },
-    { id: 'vision', number: '03', title: 'Our Vision', description: '' }
+    { id: 'about', number: '01', title: 'About US', description: 'Lovosis Technology Private Limited is a digital transformation and technology partner of choice for educational institutions and businesses worldwide. Since our inception, we have upheld the highest standards of innovation, engineering excellence and customer service. We are focused on creating long-term value for our clients, partners, employees, and the community at large. With expertise spanning educational equipment, testing & measurement instruments, web development, and digital marketing, we have built lasting partnerships with institutions across Karnataka and beyond.' },
+    { id: 'mission', number: '02', title: 'Our Mission', description: 'To empower educational institutions and businesses with state-of-the-art technology solutions that drive innovation, enhance learning experiences, and accelerate digital transformation.' },
+    { id: 'vision', number: '03', title: 'Our Vision', description: 'To become the premier provider of innovative educational equipment and digital solutions, revolutionizing the way institutions teach and businesses operate in the digital era.' }
   ];
 
   const stats = [
@@ -19,17 +19,52 @@ const AboutUsPage = () => {
   ];
 
   const timeline = [
-    { year: '2025', number: '01', description: 'Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat.' },
-    { year: '2015', number: '02', description: 'Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat.' },
-    { year: '2005', number: '03', description: 'Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat.' },
-    { year: '1995', number: '04', description: 'Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat.' }
+    { year: '2025', number: '01', description: 'Expanding our digital transformation services and strengthening partnerships with educational institutions across India.' },
+    { year: '2020', number: '02', description: 'Launched comprehensive digital marketing and web development services to complement our equipment offerings.' },
+    { year: '2015', number: '03', description: 'Established strong presence in Karnataka with testing & measurement equipment for engineering colleges.' },
+    { year: '2010', number: '04', description: 'Founded Lovosis Technology Private Limited with a vision to revolutionize educational equipment supply.' }
   ];
 
   const coreValues = [
-    { number: '01', title: 'Core Value 1', description: 'Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat.' },
-    { number: '02', title: 'Core Value 2', description: 'Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat.' },
-    { number: '03', title: 'Core Value 3', description: 'Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat.' }
+    { number: '01', title: 'Innovation Excellence', description: 'We continuously push boundaries in technology and education, delivering cutting-edge solutions that drive real-world impact and transformation.' },
+    { number: '02', title: 'Customer Partnership', description: 'Building long-term relationships through exceptional service, understanding client needs, and delivering solutions that exceed expectations.' },
+    { number: '03', title: 'Quality & Integrity', description: 'Upholding the highest standards in every solution we deliver, maintaining transparency, and ensuring reliability in all our partnerships.' }
   ];
+
+  const faqs = [
+    { 
+      id: 'faq1', 
+      question: 'What types of educational equipment do you offer?', 
+      answer: 'We offer premium laboratory equipment for engineering colleges and technical schools, including digital oscilloscopes, electronic workbenches, and a comprehensive range of educational tools designed to enhance practical learning experiences.' 
+    },
+    { 
+      id: 'faq2', 
+      question: 'What testing and measurement equipment do you offer?', 
+      answer: 'Our portfolio includes professional-grade testing and measurement instruments such as oscilloscopes, multimeters, signal generators, function generators, and other precision instruments essential for accurate analysis and diagnostics.' 
+    },
+    { 
+      id: 'faq3', 
+      question: 'Do you offer electronics manufacturing services?', 
+      answer: 'Yes, we provide electronics manufacturing services including PCB design, prototyping, and custom electronics solutions tailored to meet specific requirements of educational institutions and businesses.' 
+    },
+    { 
+      id: 'faq4', 
+      question: 'What digital services do you specialize in?', 
+      answer: 'We specialize in comprehensive digital services including web design and development, e-commerce solutions, mobile app development, digital marketing, SEO optimization, social media management, and content marketing strategies to boost your online presence.' 
+    },
+    { 
+      id: 'faq5', 
+      question: 'Do you provide installation and training services?', 
+      answer: 'Absolutely! We provide complete installation support and comprehensive training programs for all our equipment and solutions, ensuring your team can maximize the value of our products and services.' 
+    },
+    { 
+      id: 'faq6', 
+      question: 'How can I contact your support team?', 
+      answer: 'You can reach our support team through our contact page, email, or phone. We are committed to providing prompt assistance and are available to address all your queries and technical support needs.' 
+    }
+  ];
+
+  const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-white">
@@ -40,7 +75,7 @@ const AboutUsPage = () => {
             {/* Left - Title */}
             <div className="relative">
               <h1 className="text-4xl font-bold text-gray-900 leading-[1.1] tracking-tight">
-                Your Trusted Partner<br />in Electronics<br />Excellence
+                Building Greater Futures<br />Through Innovation and<br />Collective Knowledge
               </h1>
               
               {/* Hand-drawn Arrow */}
@@ -168,7 +203,7 @@ const AboutUsPage = () => {
           <div className="flex justify-between items-start mb-20">
             <h2 className="text-[52px] font-bold text-gray-900">Our History</h2>
             <p className="text-gray-600 text-sm max-w-[420px] leading-relaxed">
-              Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat sit amet purus sit amet consectetur.
+              From our humble beginnings to becoming a trusted technology partner, Lovosis has consistently delivered innovative solutions to educational institutions and businesses, building lasting relationships through excellence and dedication.
             </p>
           </div>
 
@@ -206,7 +241,7 @@ const AboutUsPage = () => {
                 Our<br />Core Values
               </h2>
               <p className="text-gray-600 text-sm leading-relaxed max-w-md">
-                Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat. Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat. Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat. Lorem ipsum dolor sit amet consectetur. Convallis ultricies cursus urna consequat volutpat.
+                At Lovosis, our core values define who we are and guide every decision we make. These principles form the foundation of our commitment to educational institutions and businesses, ensuring we deliver excellence in innovation, engineering, and customer service while creating lasting value for all our stakeholders.
               </p>
 
               {/* Hand-drawn Arrow pointing right */}
@@ -254,6 +289,47 @@ const AboutUsPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="bg-[#f8f9fa] py-24">
+        <div className="max-w-[1400px] mx-auto px-12">
+          <div className="text-center mb-16">
+            <h2 className="text-[52px] font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <p className="text-gray-600 text-sm max-w-2xl mx-auto">
+              Find answers to common questions about our products, services, and support.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto space-y-4">
+            {faqs.map((faq) => (
+              <div
+                key={faq.id}
+                className={`rounded-2xl transition-all cursor-pointer border-2 ${
+                  expandedFaq === faq.id
+                    ? 'bg-white border-[#e8eaed] p-6 shadow-lg'
+                    : 'bg-white border-[#e8eaed] p-5 hover:shadow-md'
+                }`}
+                onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-gray-900 font-semibold text-base mb-2">{faq.question}</h3>
+                    {expandedFaq === faq.id && (
+                      <p className="text-gray-600 text-sm leading-relaxed mt-3">{faq.answer}</p>
+                    )}
+                  </div>
+                  <ChevronDown 
+                    className={`text-[#9ca3af] flex-shrink-0 transition-transform mt-1 ${
+                      expandedFaq === faq.id ? 'rotate-180' : ''
+                    }`} 
+                    size={22} 
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
