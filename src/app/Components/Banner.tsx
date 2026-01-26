@@ -1,16 +1,24 @@
 'use client';
 
 import Image from 'next/image';
-import bannerImage from '../../../public/Banner 1.jpg'; // Change this to your actual image path
 
 export default function Banner() {
   return (
-    <section className="relative w-full h-screen overflow-hidden">
+    <section className="relative w-full h-[50vh] md:h-screen overflow-hidden">
+      {/* Desktop Banner */}
       <Image
-        src={bannerImage}
+        src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop"
         alt="Banner Image"
         fill
-        className="object-cover object-center"
+        className="hidden md:block object-cover object-center"
+        priority
+      />
+      {/* Mobile Banner */}
+      <Image
+        src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=768&h=1024&fit=crop"
+        alt="Banner Image Mobile"
+        fill
+        className="block md:hidden object-cover object-center"
         priority
       />
       {/* Optional overlay for text or effects */}

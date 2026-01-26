@@ -218,54 +218,82 @@ export default function CategoryPage() {
                 />
             </div>
 
-            {/* Categories Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredCategories.map((category, index) => (
-                    <motion.div
-                        key={category.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 group"
-                    >
-                        {/* Image */}
-                        <div className="aspect-video bg-gray-100 relative overflow-hidden">
-                            {category.image_url ? (
-                                <img
-                                    src={category.image_url}
-                                    alt={category.name}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <FolderTree size={48} className="text-gray-300" />
-                                </div>
-                            )}
-                            <span className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-medium ${category.status === 'active' ? 'bg-emerald-500 text-white' : 'bg-gray-500 text-white'
-                                }`}>
-                                {category.status}
-                            </span>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-4">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-1">{category.name}</h3>
-                            <p className="text-gray-500 text-sm mb-3 line-clamp-2">{category.description || 'No description'}</p>
-                            <div className="flex items-center justify-between text-sm mb-4">
-                                <span className="text-gray-400 font-mono text-xs">{category.slug}</span>
-                                <span className="text-gray-400">{formatDate(category.created_at)}</span>
-                            </div>
-                            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                                <button onClick={() => openEditModal(category)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-600">
-                                    <Edit2 size={14} /> Edit
-                                </button>
-                                <button onClick={() => handleDelete(category.id)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">
-                                    <Trash2 size={14} /> Delete
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                ))}
+            {/* Categories Table */}
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Category</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Slug</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Description</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {filteredCategories.map((category) => (
+                                <motion.tr
+                                    key={category.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="hover:bg-gray-50 transition-colors"
+                                >
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                                {category.image_url ? (
+                                                    <img src={category.image_url} alt={category.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <FolderTree size={20} className="text-gray-300" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-medium text-gray-900 text-sm">{category.name}</p>
+                                                <p className="text-xs text-gray-400">{formatDate(category.created_at)}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <code className="text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded">{category.slug}</code>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <p className="text-sm text-gray-600 truncate max-w-xs">{category.description || 'No description'}</p>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                            category.status === 'active' 
+                                                ? 'bg-green-100 text-green-700' 
+                                                : 'bg-gray-100 text-gray-600'
+                                        }`}>
+                                            {category.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <button
+                                                onClick={() => openEditModal(category)}
+                                                className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
+                                                title="Edit"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(category.id)}
+                                                className="p-2 hover:bg-red-50 rounded-lg text-red-500 transition-colors"
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {filteredCategories.length === 0 && (

@@ -266,44 +266,88 @@ export default function SuperSubCategoryPage() {
                 />
             </div>
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredItems.map((item, index) => (
-                    <motion.div
-                        key={item.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 group"
-                    >
-                        <div className="aspect-video bg-gray-100 relative overflow-hidden">
-                            {item.image_url ? (
-                                <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                    <Grid3X3 size={48} className="text-gray-300" />
-                                </div>
-                            )}
-                            <div className="absolute top-3 left-3 flex items-center gap-1 bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-xs">
-                                <span className="text-red-500">{item.sub_category?.category?.name}</span>
-                                <ChevronRight size={10} className="text-gray-400" />
-                                <span className="text-blue-500">{item.sub_category?.name}</span>
-                            </div>
-                        </div>
-                        <div className="p-4">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-1">{item.name}</h3>
-                            <p className="text-gray-500 text-sm mb-3 line-clamp-2">{item.description || 'No description'}</p>
-                            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                                <button onClick={() => openEditModal(item)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-600">
-                                    <Edit2 size={14} /> Edit
-                                </button>
-                                <button onClick={() => handleDelete(item.id)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">
-                                    <Trash2 size={14} /> Delete
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                ))}
+            {/* Super Sub Categories Table */}
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Super Sub Category</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Hierarchy</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Slug</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {filteredItems.map((item) => (
+                                <motion.tr
+                                    key={item.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="hover:bg-gray-50 transition-colors"
+                                >
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                                {item.image_url ? (
+                                                    <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <Grid3X3 size={20} className="text-gray-300" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-medium text-gray-900 text-sm">{item.name}</p>
+                                                {item.description && (
+                                                    <p className="text-xs text-gray-500 truncate max-w-xs">{item.description}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-1.5 text-xs">
+                                            <span className="text-red-600 bg-red-50 px-2 py-0.5 rounded font-medium">{item.sub_category?.category?.name}</span>
+                                            <ChevronRight size={12} className="text-gray-400" />
+                                            <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded font-medium">{item.sub_category?.name}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <code className="text-sm text-gray-600 bg-gray-50 px-2 py-1 rounded">{item.slug}</code>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                            item.status === 'active' 
+                                                ? 'bg-green-100 text-green-700' 
+                                                : 'bg-gray-100 text-gray-600'
+                                        }`}>
+                                            {item.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <button
+                                                onClick={() => openEditModal(item)}
+                                                className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
+                                                title="Edit"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(item.id)}
+                                                className="p-2 hover:bg-red-50 rounded-lg text-red-500 transition-colors"
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {filteredItems.length === 0 && (

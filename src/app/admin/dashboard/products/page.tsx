@@ -353,39 +353,87 @@ export default function ProductsPage() {
                 <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl" />
             </div>
 
-            {/* Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredProducts.map((product, index) => (
-                    <motion.div key={product.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className="bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-lg transition-all group">
-                        <div className="aspect-video bg-gray-100 relative overflow-hidden">
-                            {product.image_url ? (
-                                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                            ) : (
-                                <div className="w-full h-full flex items-center justify-center"><Package size={48} className="text-gray-300" /></div>
-                            )}
-                            {product.catalogue_pdf_url && (
-                                <span className="absolute top-3 left-3 bg-blue-500 text-white text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
-                                    <FileText size={12} /> PDF
-                                </span>
-                            )}
-                            {product.featured && (
-                                <span className="absolute top-3 right-3 bg-amber-500 text-white text-xs font-medium px-2 py-1 rounded-full">★ Featured</span>
-                            )}
-                        </div>
-                        <div className="p-4">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-1">{product.name}</h3>
-                            <p className="text-gray-500 text-xs mb-3">{getProductCategory(product)}</p>
-                            <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
-                                <button onClick={() => openEditModal(product)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-gray-600">
-                                    <Edit2 size={14} /> Edit
-                                </button>
-                                <button onClick={() => handleDelete(product.id)} className="flex-1 flex items-center justify-center gap-2 py-2 bg-red-50 hover:bg-red-100 rounded-lg text-red-500">
-                                    <Trash2 size={14} /> Delete
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                ))}
+            {/* Grid - Compact Table View */}
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead className="bg-gray-50 border-b border-gray-200">
+                            <tr>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Product</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Category</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {filteredProducts.map((product) => (
+                                <motion.tr
+                                    key={product.id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="hover:bg-gray-50 transition-colors"
+                                >
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                                {product.image_url ? (
+                                                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center">
+                                                        <Package size={20} className="text-gray-300" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="font-medium text-gray-900 text-sm truncate">{product.name}</p>
+                                                <div className="flex items-center gap-2 mt-1">
+                                                    {product.featured && (
+                                                        <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded">Featured</span>
+                                                    )}
+                                                    {product.catalogue_pdf_url && (
+                                                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded flex items-center gap-1">
+                                                            <FileText size={10} /> PDF
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <p className="text-sm text-gray-600 truncate max-w-xs">{getProductCategory(product)}</p>
+                                    </td>
+                                    <td className="px-4 py-3 text-center">
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                            product.status === 'active' 
+                                                ? 'bg-green-100 text-green-700' 
+                                                : 'bg-gray-100 text-gray-600'
+                                        }`}>
+                                            {product.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <button
+                                                onClick={() => openEditModal(product)}
+                                                className="p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors"
+                                                title="Edit"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(product.id)}
+                                                className="p-2 hover:bg-red-50 rounded-lg text-red-500 transition-colors"
+                                                title="Delete"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {filteredProducts.length === 0 && (
