@@ -168,6 +168,7 @@ export default function SuperSubCategoryPage() {
             });
 
             if (response.ok) {
+                showNotification(editingSuperSub ? 'Super-sub-category updated successfully' : 'Super-sub-category created successfully', 'success');
                 await fetchSuperSubCategories();
                 closeModal();
             } else {
@@ -245,7 +246,12 @@ export default function SuperSubCategoryPage() {
 
     const openEditModal = (item: SuperSubCategory) => {
         setEditingSuperSub(item);
-        setSelectedCategoryId(item.sub_category?.category_id || '');
+        
+        // Find the sub category to get its category_id
+        const subCategory = subCategories.find(sub => sub.id === item.sub_category_id);
+        const categoryId = subCategory?.category_id || item.sub_category?.category_id || '';
+        
+        setSelectedCategoryId(categoryId);
         setFormData({
             name: item.name,
             slug: item.slug,
@@ -268,6 +274,7 @@ export default function SuperSubCategoryPage() {
         setShowModal(false);
         setEditingSuperSub(null);
         setSelectedCategoryId('');
+        setFormData({ name: '', slug: '', sub_category_id: '', description: '', image_url: '', status: 'active' });
     };
 
     const handleCategoryChange = (catId: string) => {

@@ -70,6 +70,8 @@ export default function ProductsPage() {
     const [filterCategory, setFilterCategory] = useState('');
     const [filterSubCategory, setFilterSubCategory] = useState('');
     const [filterSuperSubCategory, setFilterSuperSubCategory] = useState('');
+    const [filterDescription, setFilterDescription] = useState('');
+    const [filterPdf, setFilterPdf] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterFeatured, setFilterFeatured] = useState('');
     const [showModal, setShowModal] = useState(false);
@@ -235,6 +237,7 @@ export default function ProductsPage() {
             });
 
             if (response.ok) {
+                showNotification(editingProduct ? 'Product updated successfully' : 'Product created successfully', 'success');
                 await fetchProducts();
                 closeModal();
             } else {
@@ -424,18 +427,38 @@ export default function ProductsPage() {
     const openEditModal = (product: Product) => {
         setEditingProduct(product);
 
-        if (product.super_sub_category_id) setCategoryLevel('super_sub_category');
-        else if (product.sub_category_id) setCategoryLevel('sub_category');
-        else setCategoryLevel('category');
+        // Determine category level and set proper IDs
+        let categoryId = product.category_id || '';
+        let subCategoryId = product.sub_category_id || '';
+        let superSubCategoryId = product.super_sub_category_id || '';
+
+        if (product.super_sub_category_id) {
+            setCategoryLevel('super_sub_category');
+            // Find the super sub category to get its parent IDs
+            const superSubCat = superSubCategories.find(ssc => ssc.id === product.super_sub_category_id);
+            if (superSubCat) {
+                subCategoryId = superSubCat.sub_category.id;
+                categoryId = superSubCat.sub_category.category.id;
+            }
+        } else if (product.sub_category_id) {
+            setCategoryLevel('sub_category');
+            // Find the sub category to get its parent category ID
+            const subCat = subCategories.find(sc => sc.id === product.sub_category_id);
+            if (subCat) {
+                categoryId = subCat.category.id;
+            }
+        } else {
+            setCategoryLevel('category');
+        }
 
         setFormData({
             name: product.name,
             slug: product.slug,
             description: product.description || '',
             key_features: product.key_features || '',
-            category_id: product.category_id || '',
-            sub_category_id: product.sub_category_id || '',
-            super_sub_category_id: product.super_sub_category_id || '',
+            category_id: categoryId,
+            sub_category_id: subCategoryId,
+            super_sub_category_id: superSubCategoryId,
             image_url: product.image_url || '',
             image_url_2: product.image_url_2 || '',
             image_url_3: product.image_url_3 || '',
@@ -461,55 +484,72 @@ export default function ProductsPage() {
     const closeModal = () => {
         setShowModal(false);
         setEditingProduct(null);
+        setCategoryLevel('category');
+        setFormData({
+            name: '', slug: '', description: '', key_features: '',
+            category_id: '', sub_category_id: '', super_sub_category_id: '',
+            image_url: '', image_url_2: '', image_url_3: '', catalogue_pdf_url: '',
+            featured: false, status: 'active'
+        });
     };
 
     const filteredProducts = products.filter(p => {
         // Search term filter
         const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
         
-        // Category hierarchy filter - check if product belongs to selected category at any level
+        // Category hierarchy filter
         let matchesCategory = true;
         if (filterCategory) {
-            // Direct category match
             if (p.category_id === filterCategory) {
                 matchesCategory = true;
-            }
-            // Check through subcategory
-            else if (p.sub_category_id) {
+            } else if (p.sub_category_id) {
                 const subCat = subCategories.find(sc => sc.id === p.sub_category_id);
                 matchesCategory = subCat?.category?.id === filterCategory;
-            }
-            // Check through super subcategory
-            else if (p.super_sub_category_id) {
+            } else if (p.super_sub_category_id) {
                 const superSubCat = superSubCategories.find(ssc => ssc.id === p.super_sub_category_id);
                 const subCat = superSubCat?.sub_category;
                 matchesCategory = subCat?.category?.id === filterCategory;
-            }
-            else {
+            } else {
                 matchesCategory = false;
             }
         }
         
-        // Subcategory filter - check if product belongs to selected subcategory
+        // Subcategory filter
         let matchesSubCategory = true;
         if (filterSubCategory) {
-            // Direct subcategory match
             if (p.sub_category_id === filterSubCategory) {
                 matchesSubCategory = true;
-            }
-            // Check through super subcategory
-            else if (p.super_sub_category_id) {
+            } else if (p.super_sub_category_id) {
                 const superSubCat = superSubCategories.find(ssc => ssc.id === p.super_sub_category_id);
                 matchesSubCategory = superSubCat?.sub_category?.id === filterSubCategory;
-            }
-            else {
+            } else {
                 matchesSubCategory = false;
             }
         }
         
-        // Super subcategory filter - direct match only
+        // Super subcategory filter
         const matchesSuperSubCategory = !filterSuperSubCategory || 
             p.super_sub_category_id === filterSuperSubCategory;
+        
+        // Description filter
+        let matchesDescription = true;
+        if (filterDescription) {
+            if (filterDescription === 'with-description') {
+                matchesDescription = p.description && p.description.trim().length > 0;
+            } else if (filterDescription === 'without-description') {
+                matchesDescription = !p.description || p.description.trim().length === 0;
+            }
+        }
+        
+        // PDF filter
+        let matchesPdf = true;
+        if (filterPdf) {
+            if (filterPdf === 'with-pdf') {
+                matchesPdf = p.catalogue_pdf_url && p.catalogue_pdf_url.trim().length > 0;
+            } else if (filterPdf === 'without-pdf') {
+                matchesPdf = !p.catalogue_pdf_url || p.catalogue_pdf_url.trim().length === 0;
+            }
+        }
         
         // Status filter
         const matchesStatus = !filterStatus || p.status === filterStatus;
@@ -519,7 +559,7 @@ export default function ProductsPage() {
             (filterFeatured === 'featured' ? p.featured : !p.featured);
         
         return matchesSearch && matchesCategory && matchesSubCategory && 
-               matchesSuperSubCategory && matchesStatus && matchesFeatured;
+               matchesSuperSubCategory && matchesDescription && matchesPdf && matchesStatus && matchesFeatured;
     });
 
     // Get subcategories for selected category
@@ -549,12 +589,14 @@ export default function ProductsPage() {
         setFilterCategory('');
         setFilterSubCategory('');
         setFilterSuperSubCategory('');
+        setFilterDescription('');
+        setFilterPdf('');
         setFilterStatus('');
         setFilterFeatured('');
     };
 
     const hasActiveFilters = searchTerm || filterCategory || filterSubCategory || 
-                             filterSuperSubCategory || filterStatus || filterFeatured;
+                             filterSuperSubCategory || filterDescription || filterPdf || filterStatus || filterFeatured;
 
     const getProductCategory = (product: Product) => {
         if (product.super_sub_category_id) {
@@ -665,7 +707,7 @@ export default function ProductsPage() {
                     )}
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3">
                     {/* Category Filter */}
                     <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1.5">Category</label>
@@ -710,6 +752,34 @@ export default function ProductsPage() {
                             {availableSuperSubCategories.map(ssc => (
                                 <option key={ssc.id} value={ssc.id}>{ssc.name}</option>
                             ))}
+                        </select>
+                    </div>
+
+                    {/* Description Filter */}
+                    <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">Description</label>
+                        <select
+                            value={filterDescription}
+                            onChange={(e) => setFilterDescription(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        >
+                            <option value="">All Products</option>
+                            <option value="with-description">With Description</option>
+                            <option value="without-description">Without Description</option>
+                        </select>
+                    </div>
+
+                    {/* PDF Filter */}
+                    <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">Catalogue PDF</label>
+                        <select
+                            value={filterPdf}
+                            onChange={(e) => setFilterPdf(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        >
+                            <option value="">All Products</option>
+                            <option value="with-pdf">With PDF</option>
+                            <option value="without-pdf">Without PDF</option>
                         </select>
                     </div>
 
@@ -767,6 +837,22 @@ export default function ProductsPage() {
                                 <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-700 rounded-md text-xs">
                                     {superSubCategories.find(s => s.id === filterSuperSubCategory)?.name}
                                     <button onClick={() => setFilterSuperSubCategory('')} className="hover:bg-purple-100 rounded">
+                                        <X size={12} />
+                                    </button>
+                                </span>
+                            )}
+                            {filterDescription && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-md text-xs">
+                                    {filterDescription === 'with-description' ? 'With Description' : 'Without Description'}
+                                    <button onClick={() => setFilterDescription('')} className="hover:bg-green-100 rounded">
+                                        <X size={12} />
+                                    </button>
+                                </span>
+                            )}
+                            {filterPdf && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 rounded-md text-xs">
+                                    {filterPdf === 'with-pdf' ? 'With PDF' : 'Without PDF'}
+                                    <button onClick={() => setFilterPdf('')} className="hover:bg-amber-100 rounded">
                                         <X size={12} />
                                     </button>
                                 </span>

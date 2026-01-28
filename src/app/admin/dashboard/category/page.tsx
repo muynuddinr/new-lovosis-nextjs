@@ -127,6 +127,7 @@ export default function CategoryPage() {
             });
 
             if (response.ok) {
+                showNotification(editingCategory ? 'Category updated successfully' : 'Category created successfully', 'success');
                 await fetchCategories();
                 closeModal();
             } else {

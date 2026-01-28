@@ -148,6 +148,7 @@ export default function SubCategoryPage() {
             });
 
             if (response.ok) {
+                showNotification(editingSubCategory ? 'Sub-category updated successfully' : 'Sub-category created successfully', 'success');
                 await fetchSubCategories();
                 closeModal();
             } else {
@@ -246,6 +247,7 @@ export default function SubCategoryPage() {
     const closeModal = () => {
         setShowModal(false);
         setEditingSubCategory(null);
+        setFormData({ name: '', slug: '', category_id: '', description: '', image_url: '', status: 'active' });
     };
 
     const filteredSubCategories = subCategories.filter(subCat =>
