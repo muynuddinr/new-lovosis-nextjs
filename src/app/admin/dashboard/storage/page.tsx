@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { HardDrive, FileText, Trash2, Download, AlertCircle, Upload, ImageIcon, FileIcon, Music } from 'lucide-react';
+import { HardDrive, FileText, Trash2, Download, AlertCircle, Upload, ImageIcon, FileIcon, Music, CheckSquare, Square } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
+import { useNotification } from '@/app/Components/Notification';
 
 interface StorageFile {
     name: string;
@@ -19,12 +20,15 @@ interface BucketInfo {
 }
 
 export default function StoragePage() {
+    const { showNotification, showConfirm } = useNotification();
     const [buckets, setBuckets] = useState<BucketInfo[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [totalStorageUsed, setTotalStorageUsed] = useState(0);
     const [uploading, setUploading] = useState(false);
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+    const [bulkDeleting, setBulkDeleting] = useState(false);
 
     useEffect(() => {
         fetchStorageInfo();
@@ -140,7 +144,8 @@ export default function StoragePage() {
     };
 
     const handleDeleteFile = async (bucketName: string, fileName: string) => {
-        if (!confirm('Are you sure you want to delete this file?')) return;
+        const confirmed = await showConfirm('Are you sure you want to delete this file?');
+        if (!confirmed) return;
 
         try {
             if (!supabase) {
@@ -153,10 +158,57 @@ export default function StoragePage() {
                 .remove([fileName]);
 
             if (error) throw error;
-            alert('File deleted successfully');
+            showNotification('File deleted successfully', 'success');
             fetchStorageInfo();
         } catch (err) {
-            alert('Failed to delete file: ' + (err instanceof Error ? err.message : 'Unknown error'));
+            showNotification('Failed to delete file: ' + (err instanceof Error ? err.message : 'Unknown error'), 'error');
+        }
+    };
+
+    const toggleFileSelection = (fileName: string) => {
+        const newSelected = new Set(selectedFiles);
+        if (newSelected.has(fileName)) {
+            newSelected.delete(fileName);
+        } else {
+            newSelected.add(fileName);
+        }
+        setSelectedFiles(newSelected);
+    };
+
+    const toggleSelectAll = (files: StorageFile[]) => {
+        if (selectedFiles.size === files.length) {
+            setSelectedFiles(new Set());
+        } else {
+            setSelectedFiles(new Set(files.map(f => f.name)));
+        }
+    };
+
+    const handleBulkDelete = async (bucketName: string) => {
+        if (selectedFiles.size === 0) return;
+        
+        const confirmed = await showConfirm(`Are you sure you want to delete ${selectedFiles.size} file(s)?`);
+        if (!confirmed) return;
+
+        setBulkDeleting(true);
+        try {
+            if (!supabase) {
+                throw new Error('Supabase not configured');
+            }
+
+            const { error } = await supabase
+                .storage
+                .from(bucketName)
+                .remove(Array.from(selectedFiles));
+
+            if (error) throw error;
+            
+            showNotification(`Successfully deleted ${selectedFiles.size} file(s)`, 'success');
+            setSelectedFiles(new Set());
+            fetchStorageInfo();
+        } catch (err) {
+            showNotification('Failed to delete files: ' + (err instanceof Error ? err.message : 'Unknown error'), 'error');
+        } finally {
+            setBulkDeleting(false);
         }
     };
 
@@ -182,7 +234,7 @@ export default function StoragePage() {
 
             if (error) throw error;
 
-            alert('File uploaded successfully');
+            showNotification('File uploaded successfully', 'success');
             e.target.value = ''; // Reset input
             fetchStorageInfo(); // Refresh list
         } catch (err) {
@@ -388,11 +440,30 @@ export default function StoragePage() {
                                 <div>
                                     <h3 className="text-2xl font-bold text-white capitalize">{bucket.name} Bucket</h3>
                                     <p className="text-red-100 text-sm mt-2">{bucket.files.length} {bucket.files.length === 1 ? 'file' : 'files'} • {formatBytes(bucket.totalSize)}</p>
+                                    {selectedFiles.size > 0 && (
+                                        <p className="text-white text-sm mt-1 font-semibold">{selectedFiles.size} file(s) selected</p>
+                                    )}
                                 </div>
                             </div>
-                            <div className="text-right bg-white/10 rounded-xl p-4 backdrop-blur-sm">
-                                <p className="text-red-100 text-xs font-semibold uppercase tracking-widest mb-1">Total Size</p>
-                                <p className="text-3xl font-bold text-white">{formatBytes(bucket.totalSize)}</p>
+                            <div className="flex items-center gap-3">
+                                {selectedFiles.size > 0 && (
+                                    <motion.button
+                                        initial={{ scale: 0.8, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleBulkDelete(bucket.name)}
+                                        disabled={bulkDeleting}
+                                        className="px-4 py-2 bg-white text-red-600 rounded-lg hover:bg-red-50 transition-colors flex items-center gap-2 font-semibold disabled:opacity-50"
+                                    >
+                                        <Trash2 size={16} />
+                                        {bulkDeleting ? 'Deleting...' : `Delete ${selectedFiles.size}`}
+                                    </motion.button>
+                                )}
+                                <div className="text-right bg-white/10 rounded-xl p-4 backdrop-blur-sm">
+                                    <p className="text-red-100 text-xs font-semibold uppercase tracking-widest mb-1">Total Size</p>
+                                    <p className="text-3xl font-bold text-white">{formatBytes(bucket.totalSize)}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -416,6 +487,19 @@ export default function StoragePage() {
                             <table className="w-full">
                                 <thead>
                                     <tr className="border-b-2 border-red-200 bg-linear-to-r from-red-50 to-white">
+                                        <th className="text-center px-4 py-4 text-red-700 text-sm font-bold w-12">
+                                            <button
+                                                onClick={() => toggleSelectAll(bucket.files)}
+                                                className="hover:bg-red-100 p-1 rounded transition-colors"
+                                                title={selectedFiles.size === bucket.files.length ? 'Deselect All' : 'Select All'}
+                                            >
+                                                {selectedFiles.size === bucket.files.length ? (
+                                                    <CheckSquare size={20} className="text-red-600" />
+                                                ) : (
+                                                    <Square size={20} className="text-red-600" />
+                                                )}
+                                            </button>
+                                        </th>
                                         <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">File</th>
                                         <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">Folder</th>
                                         <th className="text-left px-6 py-4 text-red-700 text-sm font-bold">Type</th>
@@ -431,8 +515,22 @@ export default function StoragePage() {
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             transition={{ delay: fileIndex * 0.05 }}
-                                            className="border-b border-red-100 hover:bg-red-50 transition-colors duration-200"
+                                            className={`border-b border-red-100 hover:bg-red-50 transition-colors duration-200 ${
+                                                selectedFiles.has(file.name) ? 'bg-red-50' : ''
+                                            }`}
                                         >
+                                            <td className="px-4 py-4 text-center">
+                                                <button
+                                                    onClick={() => toggleFileSelection(file.name)}
+                                                    className="hover:bg-red-100 p-1 rounded transition-colors"
+                                                >
+                                                    {selectedFiles.has(file.name) ? (
+                                                        <CheckSquare size={20} className="text-red-600" />
+                                                    ) : (
+                                                        <Square size={20} className="text-gray-400" />
+                                                    )}
+                                                </button>
+                                            </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center shrink-0">

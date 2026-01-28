@@ -241,8 +241,8 @@ const FeaturedProducts = () => {
             onMouseEnter={() => setIsAutoPlaying(false)}
             onMouseLeave={() => setIsAutoPlaying(true)}
           >
-            {/* Duplicate products for infinite scroll effect */}
-            {[...products, ...products, ...products].map((product, index) => (
+            {/* Show products once */}
+            {products.map((product, index) => (
               <Link 
                 key={`${product.id}-${index}`}
                 href={`/product/${product.slug}`}
@@ -251,11 +251,11 @@ const FeaturedProducts = () => {
               >
                 <div className="h-full bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
                   {/* Image Section */}
-                  <div className="relative h-[260px] overflow-hidden bg-gray-100">
+                  <div className="relative h-[260px] overflow-hidden bg-gray-100 flex items-center justify-center">
                     <img
                       src={product.image_url}
                       alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                     />
                     
                     {/* Category Badge */}

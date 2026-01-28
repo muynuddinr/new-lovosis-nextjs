@@ -13,8 +13,13 @@ import {
     Check,
     Upload,
     FileText,
-    Image as ImageIcon
+    Image as ImageIcon,
+    CheckSquare,
+    Square,
+    Download,
+    FileSpreadsheet
 } from 'lucide-react';
+import { useNotification } from '@/app/Components/Notification';
 
 interface Category {
     id: string;
@@ -55,17 +60,29 @@ interface Product {
 }
 
 export default function ProductsPage() {
+    const { showNotification, showConfirm } = useNotification();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
     const [superSubCategories, setSuperSubCategories] = useState<SuperSubCategory[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterCategory, setFilterCategory] = useState('');
+    const [filterSubCategory, setFilterSubCategory] = useState('');
+    const [filterSuperSubCategory, setFilterSuperSubCategory] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
+    const [filterFeatured, setFilterFeatured] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState<{ [key: string]: boolean }>({});
     const [categoryLevel, setCategoryLevel] = useState<'category' | 'sub_category' | 'super_sub_category'>('category');
+    const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+    const [bulkDeleting, setBulkDeleting] = useState(false);
+    const [showBulkUpload, setShowBulkUpload] = useState(false);
+    const [bulkUploading, setBulkUploading] = useState(false);
+    const [csvPreview, setCsvPreview] = useState<any[]>([]);
+    const [csvFile, setCsvFile] = useState<File | null>(null);
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
@@ -138,7 +155,7 @@ export default function ProductsPage() {
                 const data = await response.json();
                 setFormData(prev => ({ ...prev, [field]: data.url }));
             } else {
-                alert('Failed to upload');
+                showNotification('Failed to upload', 'error');
             }
         } catch (error) {
             console.error('Upload failed:', error);
@@ -152,7 +169,7 @@ export default function ProductsPage() {
         if (!file) return;
 
         if (file.type !== 'application/pdf') {
-            alert('Please upload a PDF file');
+            showNotification('Please upload a PDF file', 'error');
             return;
         }
 
@@ -171,7 +188,7 @@ export default function ProductsPage() {
                 const data = await response.json();
                 setFormData(prev => ({ ...prev, catalogue_pdf_url: data.url }));
             } else {
-                alert('Failed to upload PDF');
+                showNotification('Failed to upload PDF', 'error');
             }
         } catch (error) {
             console.error('Upload failed:', error);
@@ -222,7 +239,7 @@ export default function ProductsPage() {
                 closeModal();
             } else {
                 const data = await response.json();
-                alert(data.error || 'Failed to save');
+                showNotification(data.error || 'Failed to save', 'error');
             }
         } catch (error) {
             console.error('Failed to save:', error);
@@ -232,13 +249,175 @@ export default function ProductsPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Delete this product?')) return;
+        const confirmed = await showConfirm('Delete this product?');
+        if (!confirmed) return;
 
         try {
             const response = await fetch(`/api/admin/products?id=${id}`, { method: 'DELETE' });
             if (response.ok) await fetchProducts();
         } catch (error) {
             console.error('Failed to delete:', error);
+        }
+    };
+
+    const toggleProductSelection = (id: string) => {
+        const newSelected = new Set(selectedProducts);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedProducts(newSelected);
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedProducts.size === filteredProducts.length) {
+            setSelectedProducts(new Set());
+        } else {
+            setSelectedProducts(new Set(filteredProducts.map(p => p.id)));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedProducts.size === 0) return;
+        
+        const confirmed = await showConfirm(`Are you sure you want to delete ${selectedProducts.size} product(s)?`);
+        if (!confirmed) return;
+
+        setBulkDeleting(true);
+        try {
+            const deletePromises = Array.from(selectedProducts).map(id =>
+                fetch(`/api/admin/products?id=${id}`, { method: 'DELETE' })
+            );
+            
+            await Promise.all(deletePromises);
+            
+            showNotification(`Successfully deleted ${selectedProducts.size} product(s)`, 'success');
+            setSelectedProducts(new Set());
+            await fetchProducts();
+        } catch (error) {
+            console.error('Failed to bulk delete:', error);
+            showNotification('Failed to delete some products', 'error');
+        } finally {
+            setBulkDeleting(false);
+        }
+    };
+
+    // Download CSV template
+    const downloadTemplate = () => {
+        const csvContent = [
+            'name,slug,description,key_features,category_id,sub_category_id,super_sub_category_id,image_url,image_url_2,image_url_3,catalogue_pdf_url,featured,status',
+            'Sample Product,sample-product,"Product description","Feature 1; Feature 2; Feature 3",category-id-here,,,https://example.com/image.jpg,,,https://example.com/catalogue.pdf,false,active',
+            'Another Product,another-product,"Another description","Feature A; Feature B",,sub-category-id-here,,https://example.com/image2.jpg,,,,,true,active'
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'product-template.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
+
+    // Parse CSV file
+    const handleCsvFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setCsvFile(file);
+        const reader = new FileReader();
+        
+        reader.onload = (event) => {
+            const text = event.target?.result as string;
+            const lines = text.split('\n').filter(line => line.trim());
+            
+            if (lines.length < 2) {
+                showNotification('CSV file is empty or invalid', 'error');
+                return;
+            }
+
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = lines.slice(1).map(line => {
+                const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+                const row: any = {};
+                headers.forEach((header, index) => {
+                    row[header] = values[index] || '';
+                });
+                return row;
+            });
+
+            setCsvPreview(data);
+        };
+
+        reader.readAsText(file);
+    };
+
+    // Upload bulk products
+    const handleBulkUpload = async () => {
+        if (csvPreview.length === 0) {
+            showNotification('No data to upload', 'error');
+            return;
+        }
+
+        const confirmed = await showConfirm(`Upload ${csvPreview.length} product(s)?`);
+        if (!confirmed) return;
+
+        setBulkUploading(true);
+        let successCount = 0;
+        let errorCount = 0;
+
+        try {
+            for (const row of csvPreview) {
+                try {
+                    const productData = {
+                        name: row.name,
+                        slug: row.slug,
+                        description: row.description || '',
+                        key_features: row.key_features || '',
+                        category_id: row.category_id || null,
+                        sub_category_id: row.sub_category_id || null,
+                        super_sub_category_id: row.super_sub_category_id || null,
+                        image_url: row.image_url || '',
+                        image_url_2: row.image_url_2 || '',
+                        image_url_3: row.image_url_3 || '',
+                        catalogue_pdf_url: row.catalogue_pdf_url || '',
+                        featured: row.featured === 'true' || row.featured === '1',
+                        status: row.status || 'active'
+                    };
+
+                    const response = await fetch('/api/admin/products', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(productData),
+                    });
+
+                    if (response.ok) {
+                        successCount++;
+                    } else {
+                        errorCount++;
+                    }
+                } catch (error) {
+                    errorCount++;
+                }
+            }
+
+            showNotification(
+                `Upload complete: ${successCount} successful, ${errorCount} failed`,
+                errorCount === 0 ? 'success' : 'warning'
+            );
+
+            if (successCount > 0) {
+                await fetchProducts();
+                setShowBulkUpload(false);
+                setCsvPreview([]);
+                setCsvFile(null);
+            }
+        } catch (error) {
+            console.error('Bulk upload error:', error);
+            showNotification('Bulk upload failed', 'error');
+        } finally {
+            setBulkUploading(false);
         }
     };
 
@@ -284,9 +463,98 @@ export default function ProductsPage() {
         setEditingProduct(null);
     };
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredProducts = products.filter(p => {
+        // Search term filter
+        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        // Category hierarchy filter - check if product belongs to selected category at any level
+        let matchesCategory = true;
+        if (filterCategory) {
+            // Direct category match
+            if (p.category_id === filterCategory) {
+                matchesCategory = true;
+            }
+            // Check through subcategory
+            else if (p.sub_category_id) {
+                const subCat = subCategories.find(sc => sc.id === p.sub_category_id);
+                matchesCategory = subCat?.category?.id === filterCategory;
+            }
+            // Check through super subcategory
+            else if (p.super_sub_category_id) {
+                const superSubCat = superSubCategories.find(ssc => ssc.id === p.super_sub_category_id);
+                const subCat = superSubCat?.sub_category;
+                matchesCategory = subCat?.category?.id === filterCategory;
+            }
+            else {
+                matchesCategory = false;
+            }
+        }
+        
+        // Subcategory filter - check if product belongs to selected subcategory
+        let matchesSubCategory = true;
+        if (filterSubCategory) {
+            // Direct subcategory match
+            if (p.sub_category_id === filterSubCategory) {
+                matchesSubCategory = true;
+            }
+            // Check through super subcategory
+            else if (p.super_sub_category_id) {
+                const superSubCat = superSubCategories.find(ssc => ssc.id === p.super_sub_category_id);
+                matchesSubCategory = superSubCat?.sub_category?.id === filterSubCategory;
+            }
+            else {
+                matchesSubCategory = false;
+            }
+        }
+        
+        // Super subcategory filter - direct match only
+        const matchesSuperSubCategory = !filterSuperSubCategory || 
+            p.super_sub_category_id === filterSuperSubCategory;
+        
+        // Status filter
+        const matchesStatus = !filterStatus || p.status === filterStatus;
+        
+        // Featured filter
+        const matchesFeatured = !filterFeatured || 
+            (filterFeatured === 'featured' ? p.featured : !p.featured);
+        
+        return matchesSearch && matchesCategory && matchesSubCategory && 
+               matchesSuperSubCategory && matchesStatus && matchesFeatured;
+    });
+
+    // Get subcategories for selected category
+    const availableSubCategories = filterCategory 
+        ? subCategories.filter(sc => sc.category?.id === filterCategory)
+        : [];
+
+    // Get super subcategories for selected subcategory
+    const availableSuperSubCategories = filterSubCategory
+        ? superSubCategories.filter(ssc => ssc.sub_category?.id === filterSubCategory)
+        : [];
+
+    // Clear child filters when parent changes
+    const handleCategoryFilterChange = (categoryId: string) => {
+        setFilterCategory(categoryId);
+        setFilterSubCategory('');
+        setFilterSuperSubCategory('');
+    };
+
+    const handleSubCategoryFilterChange = (subCategoryId: string) => {
+        setFilterSubCategory(subCategoryId);
+        setFilterSuperSubCategory('');
+    };
+
+    const clearAllFilters = () => {
+        setSearchTerm('');
+        setFilterCategory('');
+        setFilterSubCategory('');
+        setFilterSuperSubCategory('');
+        setFilterStatus('');
+        setFilterFeatured('');
+    };
+
+    const hasActiveFilters = searchTerm || filterCategory || filterSubCategory || 
+                             filterSuperSubCategory || filterStatus || filterFeatured;
 
     const getProductCategory = (product: Product) => {
         if (product.super_sub_category_id) {
@@ -339,12 +607,32 @@ export default function ProductsPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-                        <p className="text-gray-500 text-sm">{products.length} products</p>
+                        <p className="text-gray-500 text-sm">{products.length} products {selectedProducts.size > 0 && `• ${selectedProducts.size} selected`}</p>
                     </div>
                 </div>
-                <button onClick={openCreateModal} className="flex items-center gap-2 px-4 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white font-medium rounded-xl shadow-lg">
-                    <Plus size={18} /> Add Product
-                </button>
+                <div className="flex items-center gap-2">
+                    {selectedProducts.size > 0 && (
+                        <motion.button
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            onClick={handleBulkDelete}
+                            disabled={bulkDeleting}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white font-medium rounded-xl shadow-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                        >
+                            <Trash2 size={18} />
+                            {bulkDeleting ? 'Deleting...' : `Delete ${selectedProducts.size}`}
+                        </motion.button>
+                    )}
+                    <button 
+                        onClick={() => setShowBulkUpload(true)} 
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 font-medium rounded-xl shadow-sm hover:bg-gray-50 transition-colors"
+                    >
+                        <FileSpreadsheet size={18} /> Bulk Upload
+                    </button>
+                    <button onClick={openCreateModal} className="flex items-center gap-2 px-4 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white font-medium rounded-xl shadow-lg">
+                        <Plus size={18} /> Add Product
+                    </button>
+                </div>
             </motion.div>
 
             {/* Search */}
@@ -353,12 +641,179 @@ export default function ProductsPage() {
                 <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl" />
             </div>
 
+            {/* Filters */}
+            <motion.div 
+                initial={{ opacity: 0, y: -10 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white border border-gray-200 rounded-xl p-4"
+            >
+                <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        Filters
+                    </h3>
+                    {hasActiveFilters && (
+                        <button
+                            onClick={clearAllFilters}
+                            className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
+                        >
+                            <X size={14} />
+                            Clear All
+                        </button>
+                    )}
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+                    {/* Category Filter */}
+                    <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">Category</label>
+                        <select
+                            value={filterCategory}
+                            onChange={(e) => handleCategoryFilterChange(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        >
+                            <option value="">All Categories</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Sub Category Filter */}
+                    <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">Sub Category</label>
+                        <select
+                            value={filterSubCategory}
+                            onChange={(e) => handleSubCategoryFilterChange(e.target.value)}
+                            disabled={!filterCategory}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                        >
+                            <option value="">All Sub Categories</option>
+                            {availableSubCategories.map(sub => (
+                                <option key={sub.id} value={sub.id}>{sub.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Super Sub Category Filter */}
+                    <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">Product Series</label>
+                        <select
+                            value={filterSuperSubCategory}
+                            onChange={(e) => setFilterSuperSubCategory(e.target.value)}
+                            disabled={!filterSubCategory}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 disabled:bg-gray-50 disabled:cursor-not-allowed"
+                        >
+                            <option value="">All Series</option>
+                            {availableSuperSubCategories.map(ssc => (
+                                <option key={ssc.id} value={ssc.id}>{ssc.name}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Status Filter */}
+                    <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">Status</label>
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        >
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+
+                    {/* Featured Filter */}
+                    <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1.5">Featured</label>
+                        <select
+                            value={filterFeatured}
+                            onChange={(e) => setFilterFeatured(e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                        >
+                            <option value="">All Products</option>
+                            <option value="featured">Featured Only</option>
+                            <option value="non-featured">Non-Featured</option>
+                        </select>
+                    </div>
+                </div>
+
+                {/* Active Filters Summary */}
+                {hasActiveFilters && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                        <div className="flex flex-wrap gap-2 items-center">
+                            <span className="text-xs text-gray-500 font-medium">Active:</span>
+                            {filterCategory && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-50 text-red-700 rounded-md text-xs">
+                                    {categories.find(c => c.id === filterCategory)?.name}
+                                    <button onClick={() => handleCategoryFilterChange('')} className="hover:bg-red-100 rounded">
+                                        <X size={12} />
+                                    </button>
+                                </span>
+                            )}
+                            {filterSubCategory && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-xs">
+                                    {subCategories.find(s => s.id === filterSubCategory)?.name}
+                                    <button onClick={() => handleSubCategoryFilterChange('')} className="hover:bg-blue-100 rounded">
+                                        <X size={12} />
+                                    </button>
+                                </span>
+                            )}
+                            {filterSuperSubCategory && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-50 text-purple-700 rounded-md text-xs">
+                                    {superSubCategories.find(s => s.id === filterSuperSubCategory)?.name}
+                                    <button onClick={() => setFilterSuperSubCategory('')} className="hover:bg-purple-100 rounded">
+                                        <X size={12} />
+                                    </button>
+                                </span>
+                            )}
+                            {filterStatus && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs capitalize">
+                                    {filterStatus}
+                                    <button onClick={() => setFilterStatus('')} className="hover:bg-gray-200 rounded">
+                                        <X size={12} />
+                                    </button>
+                                </span>
+                            )}
+                            {filterFeatured && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-50 text-amber-700 rounded-md text-xs capitalize">
+                                    {filterFeatured.replace('-', ' ')}
+                                    <button onClick={() => setFilterFeatured('')} className="hover:bg-amber-100 rounded">
+                                        <X size={12} />
+                                    </button>
+                                </span>
+                            )}
+                            <span className="text-xs text-gray-500 ml-auto">
+                                Showing {filteredProducts.length} of {products.length} products
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </motion.div>
+
             {/* Grid - Compact Table View */}
             <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase w-12">
+                                    <button
+                                        onClick={toggleSelectAll}
+                                        className="hover:bg-gray-200 p-1 rounded transition-colors"
+                                        title={selectedProducts.size === filteredProducts.length ? 'Deselect All' : 'Select All'}
+                                    >
+                                        {selectedProducts.size === filteredProducts.length && filteredProducts.length > 0 ? (
+                                            <CheckSquare size={18} className="text-gray-700" />
+                                        ) : (
+                                            <Square size={18} className="text-gray-500" />
+                                        )}
+                                    </button>
+                                </th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Product</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Category</th>
                                 <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Status</th>
@@ -371,8 +826,22 @@ export default function ProductsPage() {
                                     key={product.id}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="hover:bg-gray-50 transition-colors"
+                                    className={`hover:bg-gray-50 transition-colors ${
+                                        selectedProducts.has(product.id) ? 'bg-blue-50' : ''
+                                    }`}
                                 >
+                                    <td className="px-4 py-3 text-center">
+                                        <button
+                                            onClick={() => toggleProductSelection(product.id)}
+                                            className="hover:bg-gray-100 p-1 rounded transition-colors"
+                                        >
+                                            {selectedProducts.has(product.id) ? (
+                                                <CheckSquare size={18} className="text-blue-600" />
+                                            ) : (
+                                                <Square size={18} className="text-gray-400" />
+                                            )}
+                                        </button>
+                                    </td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
@@ -573,6 +1042,161 @@ export default function ProductsPage() {
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Bulk Upload Modal */}
+            <AnimatePresence>
+                {showBulkUpload && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                        onClick={() => !bulkUploading && setShowBulkUpload(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden"
+                        >
+                            {/* Header */}
+                            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-red-50 to-white">
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-900">Bulk Upload Products</h2>
+                                    <p className="text-sm text-gray-500 mt-1">Upload multiple products using CSV file</p>
+                                </div>
+                                <button onClick={() => !bulkUploading && setShowBulkUpload(false)} className="text-gray-400 hover:text-gray-600">
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            {/* Body */}
+                            <div className="px-6 py-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+                                {/* Download Template */}
+                                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                                    <div className="flex items-start justify-between">
+                                        <div>
+                                            <h3 className="font-semibold text-blue-900 mb-1">Download CSV Template</h3>
+                                            <p className="text-sm text-blue-700">Start with our template to ensure correct formatting</p>
+                                        </div>
+                                        <button
+                                            onClick={downloadTemplate}
+                                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                        >
+                                            <Download size={18} />
+                                            Download
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Upload Area */}
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Upload CSV File</label>
+                                    <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-red-500 transition-colors">
+                                        <FileSpreadsheet size={48} className="mx-auto text-gray-400 mb-3" />
+                                        <p className="text-gray-600 mb-2">
+                                            {csvFile ? csvFile.name : 'Choose a CSV file or drag it here'}
+                                        </p>
+                                        <input
+                                            type="file"
+                                            accept=".csv"
+                                            onChange={handleCsvFileChange}
+                                            className="hidden"
+                                            id="csv-upload"
+                                            disabled={bulkUploading}
+                                        />
+                                        <label
+                                            htmlFor="csv-upload"
+                                            className="inline-block px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 cursor-pointer transition-colors"
+                                        >
+                                            Select File
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* Preview */}
+                                {csvPreview.length > 0 && (
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900 mb-3">
+                                            Preview ({csvPreview.length} products)
+                                        </h3>
+                                        <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                            <div className="max-h-96 overflow-auto">
+                                                <table className="w-full text-sm">
+                                                    <thead className="bg-gray-50 sticky top-0">
+                                                        <tr>
+                                                            <th className="px-4 py-2 text-left font-medium text-gray-700">#</th>
+                                                            <th className="px-4 py-2 text-left font-medium text-gray-700">Name</th>
+                                                            <th className="px-4 py-2 text-left font-medium text-gray-700">Slug</th>
+                                                            <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
+                                                            <th className="px-4 py-2 text-left font-medium text-gray-700">Featured</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {csvPreview.map((row, index) => (
+                                                            <tr key={index} className="border-t border-gray-100 hover:bg-gray-50">
+                                                                <td className="px-4 py-2 text-gray-600">{index + 1}</td>
+                                                                <td className="px-4 py-2 text-gray-900">{row.name || '-'}</td>
+                                                                <td className="px-4 py-2 text-gray-600">{row.slug || '-'}</td>
+                                                                <td className="px-4 py-2">
+                                                                    <span className={`px-2 py-1 rounded-full text-xs ${row.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                                                                        {row.status || 'active'}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="px-4 py-2">
+                                                                    {(row.featured === 'true' || row.featured === '1') ? (
+                                                                        <Check size={16} className="text-green-600" />
+                                                                    ) : (
+                                                                        <X size={16} className="text-gray-400" />
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Footer */}
+                            <div className="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+                                <p className="text-sm text-gray-600">
+                                    {csvPreview.length > 0 ? `Ready to upload ${csvPreview.length} products` : 'Upload a CSV file to begin'}
+                                </p>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => !bulkUploading && setShowBulkUpload(false)}
+                                        disabled={bulkUploading}
+                                        className="px-4 py-2 border border-gray-200 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleBulkUpload}
+                                        disabled={csvPreview.length === 0 || bulkUploading}
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50"
+                                    >
+                                        {bulkUploading ? (
+                                            <>
+                                                <Loader2 size={18} className="animate-spin" />
+                                                Uploading...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Upload size={18} />
+                                                Upload Products
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}

@@ -1,13 +1,15 @@
 'use client';
 
 import Image from 'next/image';
+import Img from '../../../public/Banner 1.jpg'; 
+import img2 from '../../../public/Banner 1.jpg'; 
 
 export default function Banner() {
   return (
     <section className="relative w-full h-[50vh] md:h-screen overflow-hidden">
       {/* Desktop Banner */}
       <Image
-        src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&h=1080&fit=crop"
+        src={Img}
         alt="Banner Image"
         fill
         className="hidden md:block object-cover object-center"
@@ -15,7 +17,7 @@ export default function Banner() {
       />
       {/* Mobile Banner */}
       <Image
-        src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=768&h=1024&fit=crop"
+        src={img2}
         alt="Banner Image Mobile"
         fill
         className="block md:hidden object-cover object-center"

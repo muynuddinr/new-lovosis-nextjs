@@ -36,9 +36,24 @@ export async function GET(
             console.error('Error fetching subcategories:', subError);
         }
 
+        // Get products directly under this category (no subcategory)
+        const { data: products, error: productsError } = await supabase
+            .from('products')
+            .select('id, name, slug, image_url')
+            .eq('category_id', category.id)
+            .is('sub_category_id', null)
+            .eq('status', 'active')
+            .order('name')
+            .limit(20);
+
+        if (productsError) {
+            console.error('Error fetching products:', productsError);
+        }
+
         return NextResponse.json({
             category,
             subCategories: subCategories || [],
+            products: products || [],
         });
     } catch (error) {
         console.error('Category API error:', error);

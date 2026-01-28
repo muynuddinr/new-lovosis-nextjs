@@ -12,8 +12,11 @@ import {
     Loader2,
     Check,
     ChevronRight,
-    Upload
+    Upload,
+    CheckSquare,
+    Square
 } from 'lucide-react';
+import { useNotification } from '@/app/Components/Notification';
 
 interface Category {
     id: string;
@@ -50,6 +53,7 @@ const formatDate = (dateString: string) => {
 };
 
 export default function SuperSubCategoryPage() {
+    const { showNotification, showConfirm } = useNotification();
     const [superSubCategories, setSuperSubCategories] = useState<SuperSubCategory[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
@@ -60,6 +64,8 @@ export default function SuperSubCategoryPage() {
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
+    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+    const [bulkDeleting, setBulkDeleting] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
@@ -136,11 +142,11 @@ export default function SuperSubCategoryPage() {
                 setFormData({ ...formData, image_url: data.url });
             } else {
                 const data = await response.json();
-                alert(data.error || 'Failed to upload');
+                showNotification(data.error || 'Failed to upload', 'error');
             }
         } catch (error) {
             console.error('Upload failed:', error);
-            alert('Failed to upload');
+            showNotification('Failed to upload', 'error');
         } finally {
             setUploading(false);
         }
@@ -166,7 +172,7 @@ export default function SuperSubCategoryPage() {
                 closeModal();
             } else {
                 const data = await response.json();
-                alert(data.error || 'Failed to save');
+                showNotification(data.error || 'Failed to save', 'error');
             }
         } catch (error) {
             console.error('Failed to save:', error);
@@ -176,15 +182,64 @@ export default function SuperSubCategoryPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure?')) return;
+        const confirmed = await showConfirm('Are you sure?');
+        if (!confirmed) return;
 
         try {
             const response = await fetch(`/api/admin/super-sub-categories?id=${id}`, { method: 'DELETE' });
             if (response.ok) {
+                showNotification('Super-sub-category deleted successfully', 'success');
                 await fetchSuperSubCategories();
+            } else {
+                const data = await response.json();
+                showNotification(data.error || 'Failed to delete super-sub-category', 'error');
             }
         } catch (error) {
             console.error('Failed to delete:', error);
+            showNotification('Failed to delete super-sub-category', 'error');
+        }
+    };
+
+    const toggleItemSelection = (id: string) => {
+        const newSelected = new Set(selectedItems);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedItems(newSelected);
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedItems.size === filteredItems.length) {
+            setSelectedItems(new Set());
+        } else {
+            setSelectedItems(new Set(filteredItems.map(item => item.id)));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedItems.size === 0) return;
+        
+        const confirmed = await showConfirm(`Are you sure you want to delete ${selectedItems.size} item(s)?`);
+        if (!confirmed) return;
+
+        setBulkDeleting(true);
+        try {
+            const deletePromises = Array.from(selectedItems).map(id =>
+                fetch(`/api/admin/super-sub-categories?id=${id}`, { method: 'DELETE' })
+            );
+            
+            await Promise.all(deletePromises);
+            
+            showNotification(`Successfully deleted ${selectedItems.size} item(s)`, 'success');
+            setSelectedItems(new Set());
+            await fetchSuperSubCategories();
+        } catch (error) {
+            console.error('Failed to bulk delete:', error);
+            showNotification('Failed to delete some items', 'error');
+        } finally {
+            setBulkDeleting(false);
         }
     };
 
@@ -254,16 +309,28 @@ export default function SuperSubCategoryPage() {
                 </button>
             </motion.div>
 
-            {/* Search */}
-            <div className="relative">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-500"
-                />
+            {/* Search & Bulk Actions */}
+            <div className="flex gap-3">
+                <div className="relative flex-1">
+                    <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-500"
+                    />
+                </div>
+                {selectedItems.size > 0 && (
+                    <button
+                        onClick={handleBulkDelete}
+                        disabled={bulkDeleting}
+                        className="flex items-center gap-2 px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl shadow-lg shadow-red-500/30 disabled:opacity-50"
+                    >
+                        {bulkDeleting ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                        Delete ({selectedItems.size})
+                    </button>
+                )}
             </div>
 
             {/* Super Sub Categories Table */}
@@ -272,6 +339,15 @@ export default function SuperSubCategoryPage() {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
+                                <th className="px-4 py-3 text-center w-12">
+                                    <button onClick={toggleSelectAll} className="p-1 hover:bg-gray-200 rounded">
+                                        {selectedItems.size === filteredItems.length && filteredItems.length > 0 ? (
+                                            <CheckSquare size={18} className="text-red-500" />
+                                        ) : (
+                                            <Square size={18} className="text-gray-400" />
+                                        )}
+                                    </button>
+                                </th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Super Sub Category</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Hierarchy</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Slug</th>
@@ -287,6 +363,15 @@ export default function SuperSubCategoryPage() {
                                     animate={{ opacity: 1 }}
                                     className="hover:bg-gray-50 transition-colors"
                                 >
+                                    <td className="px-4 py-3 text-center">
+                                        <button onClick={() => toggleItemSelection(item.id)} className="p-1 hover:bg-gray-200 rounded">
+                                            {selectedItems.has(item.id) ? (
+                                                <CheckSquare size={18} className="text-red-500" />
+                                            ) : (
+                                                <Square size={18} className="text-gray-400" />
+                                            )}
+                                        </button>
+                                    </td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">

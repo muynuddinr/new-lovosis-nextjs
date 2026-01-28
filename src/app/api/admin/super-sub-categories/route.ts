@@ -119,6 +119,23 @@ export async function DELETE(request: NextRequest) {
             return NextResponse.json({ error: 'Super Sub Category ID is required' }, { status: 400 });
         }
 
+        // Check for products
+        const { data: products, error: productsError } = await supabase
+            .from('products')
+            .select('id')
+            .eq('super_sub_category_id', id)
+            .limit(1);
+
+        if (productsError) {
+            return NextResponse.json({ error: productsError.message }, { status: 500 });
+        }
+
+        if (products && products.length > 0) {
+            return NextResponse.json({ 
+                error: 'Cannot delete super-sub-category. Please delete or reassign all products first.' 
+            }, { status: 400 });
+        }
+
         const { error } = await supabase
             .from('super_sub_categories')
             .delete()

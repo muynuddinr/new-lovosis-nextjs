@@ -13,8 +13,11 @@ import {
     User,
     Package,
     Clock,
-    Eye
+    Eye,
+    CheckSquare,
+    Square
 } from 'lucide-react';
+import { useNotification } from '@/app/Components/Notification';
 
 interface CatalogueRequest {
     id: string;
@@ -39,9 +42,12 @@ const formatDate = (dateString: string) => {
 };
 
 export default function CatalogueRequestsPage() {
+    const { showNotification, showConfirm } = useNotification();
     const [requests, setRequests] = useState<CatalogueRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+    const [bulkDeleting, setBulkDeleting] = useState(false);
 
     const fetchRequests = async () => {
         try {
@@ -74,6 +80,62 @@ export default function CatalogueRequestsPage() {
         }
     };
 
+    const toggleItemSelection = (id: string) => {
+        const newSelected = new Set(selectedItems);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedItems(newSelected);
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedItems.size === filteredRequests.length) {
+            setSelectedItems(new Set());
+        } else {
+            setSelectedItems(new Set(filteredRequests.map(item => item.id)));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedItems.size === 0) return;
+        
+        const confirmed = await showConfirm(`Are you sure you want to delete ${selectedItems.size} item(s)?`);
+        if (!confirmed) return;
+
+        setBulkDeleting(true);
+        try {
+            const results = await Promise.all(
+                Array.from(selectedItems).map(async (id) => {
+                    const response = await fetch(`/api/catalogue-request?id=${id}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        const data = await response.json();
+                        return { id, error: data.error };
+                    }
+                    return { id, success: true };
+                })
+            );
+            
+            const errors = results.filter(r => r.error);
+            const successes = results.filter(r => r.success);
+            
+            if (errors.length > 0) {
+                showNotification(`Deleted ${successes.length} item(s).\n\nFailed to delete ${errors.length}`, 'warning');
+            } else {
+                showNotification(`Successfully deleted ${selectedItems.size} item(s)`, 'success');
+            }
+            
+            setSelectedItems(new Set());
+            await fetchRequests();
+        } catch (error) {
+            console.error('Failed to bulk delete:', error);
+            showNotification('Failed to delete items', 'error');
+        } finally {
+            setBulkDeleting(false);
+        }
+    };
+
     const filteredRequests = requests.filter(req =>
         req.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         req.customer_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -101,6 +163,20 @@ export default function CatalogueRequestsPage() {
                         <p className="text-gray-500 text-sm">{requests.length} requests</p>
                     </div>
                 </div>
+                {selectedItems.size > 0 && (
+                    <button
+                        onClick={handleBulkDelete}
+                        disabled={bulkDeleting}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {bulkDeleting ? (
+                            <Loader2 size={16} className="animate-spin" />
+                        ) : (
+                            <Trash2 size={16} />
+                        )}
+                        Delete {selectedItems.size} item{selectedItems.size > 1 ? 's' : ''}
+                    </button>
+                )}
             </motion.div>
 
             {/* Stats */}
@@ -158,6 +234,15 @@ export default function CatalogueRequestsPage() {
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-gray-100 bg-gray-50">
+                                <th className="px-6 py-4 text-gray-600 text-sm font-medium">
+                                    <button onClick={toggleSelectAll} className="p-1 hover:bg-gray-200 rounded transition-colors">
+                                        {selectedItems.size === filteredRequests.length && filteredRequests.length > 0 ? (
+                                            <CheckSquare size={18} className="text-red-500" />
+                                        ) : (
+                                            <Square size={18} className="text-gray-400" />
+                                        )}
+                                    </button>
+                                </th>
                                 <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Customer</th>
                                 <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Product</th>
                                 <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Contact</th>
@@ -168,7 +253,16 @@ export default function CatalogueRequestsPage() {
                         </thead>
                         <tbody>
                             {filteredRequests.map((req) => (
-                                <tr key={req.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                <tr key={req.id} className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${selectedItems.has(req.id) ? 'bg-blue-50' : ''}`}>
+                                    <td className="px-6 py-4">
+                                        <button onClick={() => toggleItemSelection(req.id)} className="p-1 hover:bg-gray-200 rounded transition-colors">
+                                            {selectedItems.has(req.id) ? (
+                                                <CheckSquare size={18} className="text-red-500" />
+                                            ) : (
+                                                <Square size={18} className="text-gray-400" />
+                                            )}
+                                        </button>
+                                    </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">

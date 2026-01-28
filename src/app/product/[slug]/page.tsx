@@ -197,13 +197,13 @@ export default function ProductDetailPage() {
                                 key={activeImage}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="aspect-square bg-gray-100 rounded-xl relative overflow-hidden mb-4"
+                                className="aspect-square bg-gray-100 rounded-xl relative overflow-hidden mb-4 flex items-center justify-center"
                             >
                                 {images.length > 0 ? (
                                     <img
                                         src={images[activeImage]}
                                         alt={product.name}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-contain p-4"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
@@ -224,10 +224,10 @@ export default function ProductDetailPage() {
                                         <button
                                             key={index}
                                             onClick={() => setActiveImage(index)}
-                                            className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${activeImage === index ? 'border-red-500' : 'border-gray-200 hover:border-gray-300'
+                                            className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all flex items-center justify-center bg-gray-50 ${activeImage === index ? 'border-red-500' : 'border-gray-200 hover:border-gray-300'
                                                 }`}
                                         >
-                                            <img src={img} alt="" className="w-full h-full object-cover" />
+                                            <img src={img} alt="" className="w-full h-full object-contain p-1" />
                                         </button>
                                     ))}
                                 </div>

@@ -73,12 +73,12 @@ export default function ProductsPage() {
                             <Link href={`/products/${category.slug}`}>
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:border-red-200 transition-all duration-300 group cursor-pointer h-full">
                                     {/* Category Image */}
-                                    <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                                    <div className="aspect-video bg-gray-100 relative overflow-hidden flex items-center justify-center">
                                         {category.image_url ? (
                                             <img
                                                 src={category.image_url}
                                                 alt={category.name}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center">

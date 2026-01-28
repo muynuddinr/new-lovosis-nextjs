@@ -39,9 +39,24 @@ export async function GET(
             console.error('Error fetching super subcategories:', superError);
         }
 
+        // Get products directly under this subcategory (no super-subcategory)
+        const { data: products, error: productsError } = await supabase
+            .from('products')
+            .select('id, name, slug, image_url')
+            .eq('sub_category_id', subCategory.id)
+            .is('super_sub_category_id', null)
+            .eq('status', 'active')
+            .order('name')
+            .limit(20);
+
+        if (productsError) {
+            console.error('Error fetching products:', productsError);
+        }
+
         return NextResponse.json({
             subCategory,
             superSubCategories: superSubCategories || [],
+            products: products || [],
         });
     } catch (error) {
         console.error('Subcategory API error:', error);

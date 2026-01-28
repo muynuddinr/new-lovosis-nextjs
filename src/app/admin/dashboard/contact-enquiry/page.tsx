@@ -8,8 +8,12 @@ import {
     Trash2,
     CheckCircle,
     Clock,
-    Archive
+    Archive,
+    CheckSquare,
+    Square,
+    Loader2
 } from 'lucide-react';
+import { useNotification } from '@/app/Components/Notification';
 
 interface ContactEnquiry {
     id: string;
@@ -59,9 +63,12 @@ const formatDate = (dateString: string) => {
 };
 
 export default function ContactEnquiryPage() {
+    const { showNotification, showConfirm } = useNotification();
     const [enquiries, setEnquiries] = useState<ContactEnquiry[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+    const [bulkDeleting, setBulkDeleting] = useState(false);
 
     useEffect(() => {
         fetchEnquiries();
@@ -115,6 +122,62 @@ export default function ContactEnquiryPage() {
             console.error('Status update error:', error);
         }
     };
+
+    const toggleItemSelection = (id: string) => {
+        const newSelected = new Set(selectedItems);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedItems(newSelected);
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedItems.size === enquiries.length) {
+            setSelectedItems(new Set());
+        } else {
+            setSelectedItems(new Set(enquiries.map(item => item.id)));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedItems.size === 0) return;
+        
+        const confirmed = await showConfirm(`Are you sure you want to delete ${selectedItems.size} item(s)?`);
+        if (!confirmed) return;
+
+        setBulkDeleting(true);
+        try {
+            const results = await Promise.all(
+                Array.from(selectedItems).map(async (id) => {
+                    const response = await fetch(`/api/contact/${id}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        const data = await response.json();
+                        return { id, error: data.error };
+                    }
+                    return { id, success: true };
+                })
+            );
+            
+            const errors = results.filter(r => r.error);
+            const successes = results.filter(r => r.success);
+            
+            if (errors.length > 0) {
+                showNotification(`Deleted ${successes.length} item(s).\n\nFailed to delete ${errors.length}`, 'warning');
+            } else {
+                showNotification(`Successfully deleted ${selectedItems.size} item(s)`, 'success');
+            }
+            
+            setSelectedItems(new Set());
+            await fetchEnquiries();
+        } catch (error) {
+            console.error('Failed to bulk delete:', error);
+            showNotification('Failed to delete items', 'error');
+        } finally {
+            setBulkDeleting(false);
+        }
+    };
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -132,8 +195,24 @@ export default function ContactEnquiryPage() {
                         <p className="text-gray-500 text-sm">Manage all contact form submissions</p>
                     </div>
                 </div>
-                <div className="text-gray-500 text-sm">
-                    Total: <span className="text-gray-900 font-semibold">{enquiries.length}</span> enquiries
+                <div className="flex items-center gap-4">
+                    <div className="text-gray-500 text-sm">
+                        Total: <span className="text-gray-900 font-semibold">{enquiries.length}</span> enquiries
+                    </div>
+                    {selectedItems.size > 0 && (
+                        <button
+                            onClick={handleBulkDelete}
+                            disabled={bulkDeleting}
+                            className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {bulkDeleting ? (
+                                <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                                <Trash2 size={16} />
+                            )}
+                            Delete {selectedItems.size} item{selectedItems.size > 1 ? 's' : ''}
+                        </button>
+                    )}
                 </div>
             </motion.div>
 
@@ -186,6 +265,15 @@ export default function ContactEnquiryPage() {
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-gray-100 bg-gray-50">
+                                    <th className="px-6 py-4 text-gray-600 text-sm font-medium">
+                                        <button onClick={toggleSelectAll} className="p-1 hover:bg-gray-200 rounded transition-colors">
+                                            {selectedItems.size === enquiries.length && enquiries.length > 0 ? (
+                                                <CheckSquare size={18} className="text-red-500" />
+                                            ) : (
+                                                <Square size={18} className="text-gray-400" />
+                                            )}
+                                        </button>
+                                    </th>
                                     <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Name</th>
                                     <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Email</th>
                                     <th className="text-left px-6 py-4 text-gray-600 text-sm font-medium">Phone</th>
@@ -202,8 +290,17 @@ export default function ContactEnquiryPage() {
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
                                         transition={{ delay: 0.2 + index * 0.05 }}
-                                        className="border-b border-gray-50 hover:bg-gray-50 transition-colors"
+                                        className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${selectedItems.has(enquiry.id) ? 'bg-blue-50' : ''}`}
                                     >
+                                        <td className="px-6 py-4">
+                                            <button onClick={() => toggleItemSelection(enquiry.id)} className="p-1 hover:bg-gray-200 rounded transition-colors">
+                                                {selectedItems.has(enquiry.id) ? (
+                                                    <CheckSquare size={18} className="text-red-500" />
+                                                ) : (
+                                                    <Square size={18} className="text-gray-400" />
+                                                )}
+                                            </button>
+                                        </td>
                                         <td className="px-6 py-4">
                                             <span className="text-gray-900 font-medium">{enquiry.first_name} {enquiry.last_name}</span>
                                         </td>

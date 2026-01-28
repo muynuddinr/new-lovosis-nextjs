@@ -185,12 +185,12 @@ export default function ProductsSlugPage() {
                                     <Link href={`${currentPath}/${child.slug}`}>
                                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:border-red-200 transition-all duration-300 group cursor-pointer h-full">
                                             {/* Category Image */}
-                                            <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                                            <div className="aspect-video bg-gray-100 relative overflow-hidden flex items-center justify-center">
                                                 {child.image_url ? (
                                                     <img
                                                         src={child.image_url}
                                                         alt={child.name}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center">
@@ -239,12 +239,12 @@ export default function ProductsSlugPage() {
                                 >
                                     <Link href={`/product/${product.slug}`} className="block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group">
                                         {/* Product Image */}
-                                        <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                                        <div className="aspect-square bg-gray-100 relative overflow-hidden flex items-center justify-center">
                                             {product.image_url ? (
                                                 <img
                                                     src={product.image_url}
                                                     alt={product.name}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                    className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center">

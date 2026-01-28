@@ -12,8 +12,11 @@ import {
     Loader2,
     Check,
     Upload,
-    Image as ImageIcon
+    Image as ImageIcon,
+    CheckSquare,
+    Square
 } from 'lucide-react';
+import { useNotification } from '@/app/Components/Notification';
 
 interface Category {
     id: string;
@@ -34,6 +37,7 @@ const formatDate = (dateString: string) => {
 };
 
 export default function CategoryPage() {
+    const { showNotification, showConfirm } = useNotification();
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -42,6 +46,8 @@ export default function CategoryPage() {
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [selectedCategories, setSelectedCategories] = useState<Set<string>>(new Set());
+    const [bulkDeleting, setBulkDeleting] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
         slug: '',
@@ -93,11 +99,11 @@ export default function CategoryPage() {
                 setFormData({ ...formData, image_url: data.url });
             } else {
                 const data = await response.json();
-                alert(data.error || 'Failed to upload image');
+                showNotification(data.error || 'Failed to upload image', 'error');
             }
         } catch (error) {
             console.error('Upload failed:', error);
-            alert('Failed to upload image');
+            showNotification('Failed to upload image', 'error');
         } finally {
             setUploading(false);
         }
@@ -125,29 +131,88 @@ export default function CategoryPage() {
                 closeModal();
             } else {
                 const data = await response.json();
-                alert(data.error || 'Failed to save category');
+                showNotification(data.error || 'Failed to save category', 'error');
             }
         } catch (error) {
             console.error('Failed to save category:', error);
-            alert('Failed to save category');
+            showNotification('Failed to save category', 'error');
         } finally {
             setSaving(false);
         }
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this category?')) return;
+        const confirmed = await showConfirm('Are you sure you want to delete this category?');
+        if (!confirmed) return;
 
         try {
             const response = await fetch(`/api/admin/categories?id=${id}`, { method: 'DELETE' });
             if (response.ok) {
+                showNotification('Category deleted successfully', 'success');
                 await fetchCategories();
             } else {
                 const data = await response.json();
-                alert(data.error || 'Failed to delete');
+                showNotification(data.error || 'Failed to delete category', 'error');
             }
         } catch (error) {
             console.error('Failed to delete:', error);
+            showNotification('Failed to delete category', 'error');
+        }
+    };
+
+    const toggleCategorySelection = (id: string) => {
+        const newSelected = new Set(selectedCategories);
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+        setSelectedCategories(newSelected);
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedCategories.size === filteredCategories.length) {
+            setSelectedCategories(new Set());
+        } else {
+            setSelectedCategories(new Set(filteredCategories.map(c => c.id)));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        if (selectedCategories.size === 0) return;
+        
+        const confirmed = await showConfirm(`Are you sure you want to delete ${selectedCategories.size} categor${selectedCategories.size === 1 ? 'y' : 'ies'}?`);
+        if (!confirmed) return;
+
+        setBulkDeleting(true);
+        try {
+            const results = await Promise.all(
+                Array.from(selectedCategories).map(async (id) => {
+                    const response = await fetch(`/api/admin/categories?id=${id}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        const data = await response.json();
+                        return { id, error: data.error };
+                    }
+                    return { id, success: true };
+                })
+            );
+            
+            const errors = results.filter(r => r.error);
+            const successes = results.filter(r => r.success);
+            
+            if (errors.length > 0) {
+                showNotification(`Deleted ${successes.length} categor${successes.length === 1 ? 'y' : 'ies'}. Failed to delete ${errors.length}`, 'error');
+            } else {
+                showNotification(`Successfully deleted ${selectedCategories.size} categor${selectedCategories.size === 1 ? 'y' : 'ies'}`, 'success');
+            }
+            
+            setSelectedCategories(new Set());
+            await fetchCategories();
+        } catch (error) {
+            console.error('Failed to bulk delete:', error);
+            showNotification('Failed to delete categories', 'error');
+        } finally {
+            setBulkDeleting(false);
         }
     };
 
@@ -197,13 +262,27 @@ export default function CategoryPage() {
                     </div>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
-                        <p className="text-gray-500 text-sm">{categories.length} categories</p>
+                        <p className="text-gray-500 text-sm">{categories.length} categories {selectedCategories.size > 0 && `• ${selectedCategories.size} selected`}</p>
                     </div>
                 </div>
-                <button onClick={openCreateModal} className="flex items-center gap-2 px-4 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white font-medium rounded-xl shadow-lg shadow-red-500/30">
-                    <Plus size={18} />
-                    Add Category
-                </button>
+                <div className="flex items-center gap-2">
+                    {selectedCategories.size > 0 && (
+                        <motion.button
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            onClick={handleBulkDelete}
+                            disabled={bulkDeleting}
+                            className="flex items-center gap-2 px-4 py-2.5 bg-red-600 text-white font-medium rounded-xl shadow-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                        >
+                            <Trash2 size={18} />
+                            {bulkDeleting ? 'Deleting...' : `Delete ${selectedCategories.size}`}
+                        </motion.button>
+                    )}
+                    <button onClick={openCreateModal} className="flex items-center gap-2 px-4 py-2.5 bg-linear-to-r from-red-500 to-red-600 text-white font-medium rounded-xl shadow-lg shadow-red-500/30">
+                        <Plus size={18} />
+                        Add Category
+                    </button>
+                </div>
             </motion.div>
 
             {/* Search */}
@@ -224,6 +303,19 @@ export default function CategoryPage() {
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
                             <tr>
+                                <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase w-12">
+                                    <button
+                                        onClick={toggleSelectAll}
+                                        className="hover:bg-gray-200 p-1 rounded transition-colors"
+                                        title={selectedCategories.size === filteredCategories.length ? 'Deselect All' : 'Select All'}
+                                    >
+                                        {selectedCategories.size === filteredCategories.length && filteredCategories.length > 0 ? (
+                                            <CheckSquare size={18} className="text-gray-700" />
+                                        ) : (
+                                            <Square size={18} className="text-gray-500" />
+                                        )}
+                                    </button>
+                                </th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Category</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Slug</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Description</th>
@@ -237,8 +329,22 @@ export default function CategoryPage() {
                                     key={category.id}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
-                                    className="hover:bg-gray-50 transition-colors"
+                                    className={`hover:bg-gray-50 transition-colors ${
+                                        selectedCategories.has(category.id) ? 'bg-blue-50' : ''
+                                    }`}
                                 >
+                                    <td className="px-4 py-3 text-center">
+                                        <button
+                                            onClick={() => toggleCategorySelection(category.id)}
+                                            className="hover:bg-gray-100 p-1 rounded transition-colors"
+                                        >
+                                            {selectedCategories.has(category.id) ? (
+                                                <CheckSquare size={18} className="text-blue-600" />
+                                            ) : (
+                                                <Square size={18} className="text-gray-400" />
+                                            )}
+                                        </button>
+                                    </td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">

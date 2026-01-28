@@ -108,6 +108,13 @@ export default function Navbar() {
             ...prev,
             [categorySlug]: data.subCategories || []
           }));
+          // Store products directly under this category
+          if (data.products && data.products.length > 0) {
+            setProducts(prev => ({
+              ...prev,
+              [`category-${categorySlug}`]: data.products
+            }));
+          }
         }
       } catch (error) {
         console.error('Failed to fetch subcategories:', error);
@@ -132,6 +139,13 @@ export default function Navbar() {
             ...prev,
             [subCategorySlug]: data.superSubCategories || []
           }));
+          // Store products directly under this subcategory
+          if (data.products && data.products.length > 0) {
+            setProducts(prev => ({
+              ...prev,
+              [`subcategory-${subCategorySlug}`]: data.products
+            }));
+          }
         }
       } catch (error) {
         console.error('Failed to fetch super subcategories:', error);
@@ -425,12 +439,39 @@ export default function Navbar() {
                                     </div>
                                   ))}
                                 </div>
+                              ) : products[`category-${hoveredCategory}`]?.length > 0 ? (
+                                <div className="space-y-1">
+                                  <div className="mb-3 px-2">
+                                    <p className="text-xs text-gray-500">Products in this category</p>
+                                  </div>
+                                  {products[`category-${hoveredCategory}`].map((product) => (
+                                    <Link
+                                      key={product.id}
+                                      href={`/product/${product.slug}`}
+                                      onClick={() => setProductsOpen(false)}
+                                      className="group block"
+                                    >
+                                      <div className="flex items-center gap-3 px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all hover:bg-red-50">
+                                        {product.image_url && (
+                                          <div className="w-12 h-12 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-contain p-1" />
+                                          </div>
+                                        )}
+                                        <span className="text-xs md:text-sm font-medium text-gray-700 group-hover:text-red-600 flex-1">{product.name}</span>
+                                        <ChevronRight 
+                                          size={14} 
+                                          className="md:size-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-red-600 flex-shrink-0"
+                                        />
+                                      </div>
+                                    </Link>
+                                  ))}
+                                </div>
                               ) : (
                                 <div className="flex flex-col items-center justify-center py-20 text-center">
                                   <div className="w-16 h-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                                     <ChevronRight className="text-gray-300" size={32} />
                                   </div>
-                                  <p className="text-sm text-gray-500 font-medium">No subcategories available</p>
+                                  <p className="text-sm text-gray-500 font-medium">No items available</p>
                                   <p className="text-xs text-gray-400 mt-1">Try exploring other categories</p>
                                 </div>
                               )}
@@ -479,12 +520,39 @@ export default function Navbar() {
                                     </div>
                                   ))}
                                 </div>
+                              ) : products[`subcategory-${hoveredSubCategory}`]?.length > 0 ? (
+                                <div className="space-y-1">
+                                  <div className="mb-3 px-2">
+                                    <p className="text-xs text-gray-500">Products in this subcategory</p>
+                                  </div>
+                                  {products[`subcategory-${hoveredSubCategory}`].map((product) => (
+                                    <Link
+                                      key={product.id}
+                                      href={`/product/${product.slug}`}
+                                      onClick={() => setProductsOpen(false)}
+                                      className="group block"
+                                    >
+                                      <div className="flex items-center gap-3 px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all hover:bg-red-50">
+                                        {product.image_url && (
+                                          <div className="w-12 h-12 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-contain p-1" />
+                                          </div>
+                                        )}
+                                        <span className="text-xs md:text-sm font-medium text-gray-700 group-hover:text-red-600 flex-1">{product.name}</span>
+                                        <ChevronRight 
+                                          size={14} 
+                                          className="md:size-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-red-600 flex-shrink-0"
+                                        />
+                                      </div>
+                                    </Link>
+                                  ))}
+                                </div>
                               ) : (
                                 <div className="flex flex-col items-center justify-center py-20 text-center">
                                   <div className="w-16 h-16 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
                                     <ChevronRight className="text-gray-300" size={32} />
                                   </div>
-                                  <p className="text-sm text-gray-500 font-medium">No product series available</p>
+                                  <p className="text-sm text-gray-500 font-medium">No items available</p>
                                   <p className="text-xs text-gray-400 mt-1">Try another subcategory</p>
                                 </div>
                               )}
