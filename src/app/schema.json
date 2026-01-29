@@ -1,0 +1,53 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Lovosis",
+  "url": "https://lovosis.in",
+  "logo": "https://lovosis.in/logo0bg.png",
+  "description": "Leading supplier of educational trainer kits, electronic trainer kits, power supply systems, and test & measuring instruments for engineering education and training in India.",
+  "sameAs": [
+    "https://www.facebook.com/lovosis",
+    "https://www.linkedin.com/company/lovosis",
+    "https://www.instagram.com/lovosis"
+  ],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "Customer Support",
+    "telephone": "+91-XXXXXXXXXX",
+    "email": "support@lovosis.in",
+    "areaServed": "IN"
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Lovosis Office",
+    "addressLocality": "India",
+    "postalCode": "XXXXX",
+    "addressCountry": "IN"
+  },
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Educational Trainer Kits",
+      "url": "https://lovosis.in/products/educational-trainer-kits",
+      "description": "Comprehensive educational trainer kits for engineering students"
+    },
+    {
+      "@type": "Offer",
+      "name": "Electronic Trainer Kits",
+      "url": "https://lovosis.in/products/electronic-trainer-kits",
+      "description": "Advanced electronic trainer kits for hands-on learning"
+    },
+    {
+      "@type": "Offer",
+      "name": "Power Supply Systems",
+      "url": "https://lovosis.in/products/power-supply",
+      "description": "Reliable power supply systems and solutions in India"
+    },
+    {
+      "@type": "Offer",
+      "name": "Test & Measuring Instruments",
+      "url": "https://lovosis.in/products/test-measuring-instrument",
+      "description": "Professional test and measuring instruments for laboratories and educational institutions"
+    }
+  ]
+}

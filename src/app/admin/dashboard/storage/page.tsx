@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { HardDrive, FileText, Trash2, Download, AlertCircle, Upload, ImageIcon, FileIcon, Music, CheckSquare, Square } from 'lucide-react';
+import { HardDrive, FileText, Trash2, Download, AlertCircle, Upload, ImageIcon, FileIcon, Music, CheckSquare, Square, Eye, X } from 'lucide-react';
 import { supabase } from '@/app/lib/supabase';
 import { useNotification } from '@/app/Components/Notification';
 
@@ -29,6 +29,7 @@ export default function StoragePage() {
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
     const [bulkDeleting, setBulkDeleting] = useState(false);
+    const [viewModal, setViewModal] = useState<{ isOpen: boolean; file: StorageFile | null }>({ isOpen: false, file: null });
 
     useEffect(() => {
         fetchStorageInfo();
@@ -210,6 +211,14 @@ export default function StoragePage() {
         } finally {
             setBulkDeleting(false);
         }
+    };
+
+    const handleViewFile = (file: StorageFile) => {
+        setViewModal({ isOpen: true, file });
+    };
+
+    const closeViewModal = () => {
+        setViewModal({ isOpen: false, file: null });
     };
 
     const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -557,6 +566,17 @@ export default function StoragePage() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center justify-center gap-2">
+                                                    {(getFileType(file.name) === 'Image' || getFileType(file.name) === 'PDF') && (
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.1 }}
+                                                            whileTap={{ scale: 0.95 }}
+                                                            onClick={() => handleViewFile(file)}
+                                                            className="p-2.5 hover:bg-green-100 rounded-lg transition-colors text-green-600 hover:text-green-700 font-semibold shadow-sm"
+                                                            title="View"
+                                                        >
+                                                            <Eye size={18} />
+                                                        </motion.button>
+                                                    )}
                                                     <motion.a
                                                         whileHover={{ scale: 1.1 }}
                                                         whileTap={{ scale: 0.95 }}
@@ -587,6 +607,50 @@ export default function StoragePage() {
                     )}
                 </motion.div>
             ))}
+            
+            {/* View Modal */}
+            {viewModal.isOpen && viewModal.file && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+                    onClick={closeViewModal}
+                >
+                    <motion.div
+                        initial={{ scale: 0.9, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.9, opacity: 0 }}
+                        className="bg-white rounded-2xl shadow-2xl max-w-4xl max-h-[90vh] w-full overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                            <h3 className="text-xl font-bold text-gray-900">{viewModal.file.name.split('/').pop()}</h3>
+                            <button
+                                onClick={closeViewModal}
+                                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <X size={20} className="text-gray-500" />
+                            </button>
+                        </div>
+                        <div className="p-6 max-h-[70vh] overflow-auto">
+                            {getFileType(viewModal.file.name) === 'Image' ? (
+                                <img
+                                    src={viewModal.file.url}
+                                    alt={viewModal.file.name}
+                                    className="max-w-full h-auto rounded-lg shadow-lg"
+                                />
+                            ) : (
+                                <iframe
+                                    src={viewModal.file.url}
+                                    className="w-full h-[600px] border rounded-lg"
+                                    title={viewModal.file.name}
+                                />
+                            )}
+                        </div>
+                    </motion.div>
+                </motion.div>
+            )}
         </div>
     );
 }

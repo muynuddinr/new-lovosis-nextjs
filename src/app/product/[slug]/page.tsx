@@ -162,16 +162,16 @@ export default function ProductDetailPage() {
         <div className="min-h-screen bg-gray-50">
             {/* Breadcrumb */}
             <div className="bg-white border-b border-gray-100">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <nav className="flex items-center gap-2 text-sm flex-wrap">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+                    <nav className="flex items-center gap-1 sm:gap-2 text-sm flex-wrap">
                         <Link href="/" className="text-gray-500 hover:text-red-600 flex items-center gap-1">
-                            <Home size={14} /> Home
+                            <Home size={12} className="sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">Home</span>
                         </Link>
-                        <ChevronRight size={14} className="text-gray-300" />
+                        <ChevronRight size={12} className="sm:w-3.5 sm:h-3.5 text-gray-300" />
                         <Link href="/products" className="text-gray-500 hover:text-red-600">Products</Link>
                         {breadcrumb.map((crumb, index) => (
-                            <span key={crumb.slug} className="flex items-center gap-2">
-                                <ChevronRight size={14} className="text-gray-300" />
+                            <span key={crumb.slug} className="flex items-center gap-1 sm:gap-2">
+                                <ChevronRight size={12} className="sm:w-3.5 sm:h-3.5 text-gray-300" />
                                 <Link
                                     href={`/products/${breadcrumb.slice(0, index + 1).map(b => b.slug).join('/')}`}
                                     className="text-gray-500 hover:text-red-600"
@@ -180,51 +180,51 @@ export default function ProductDetailPage() {
                                 </Link>
                             </span>
                         ))}
-                        <ChevronRight size={14} className="text-gray-300" />
-                        <span className="text-gray-900 font-medium">{product.name}</span>
+                        <ChevronRight size={12} className="sm:w-3.5 sm:h-3.5 text-gray-300" />
+                        <span className="text-gray-900 font-medium text-sm sm:text-base">{product.name}</span>
                     </nav>
                 </div>
             </div>
 
             {/* Product Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+                <div className="bg-white rounded-lg sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="grid grid-cols-1 gap-0">
                         {/* Image Gallery */}
-                        <div className="p-6 lg:p-8">
+                        <div className="p-4 sm:p-6 lg:p-8">
                             {/* Main Image */}
                             <motion.div
                                 key={activeImage}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="aspect-square bg-gray-100 rounded-xl relative overflow-hidden mb-4 flex items-center justify-center"
+                                className="aspect-square bg-gray-100 rounded-lg sm:rounded-xl relative overflow-hidden mb-4 flex items-center justify-center"
                             >
                                 {images.length > 0 ? (
                                     <img
                                         src={images[activeImage]}
                                         alt={product.name}
-                                        className="w-full h-full object-contain p-4"
+                                        className="w-full h-full object-contain p-2 sm:p-4"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
-                                        <Package className="w-32 h-32 text-gray-300" />
+                                        <Package className="w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 text-gray-300" />
                                     </div>
                                 )}
                                 {product.featured && (
-                                    <span className="absolute top-4 right-4 bg-amber-500 text-white text-sm font-semibold px-3 py-1.5 rounded-full flex items-center gap-1">
-                                        <Star size={14} /> Featured
+                                    <span className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-amber-500 text-white text-xs sm:text-sm font-semibold px-2 py-1 sm:px-3 sm:py-1.5 rounded-full flex items-center gap-1">
+                                        <Star size={12} className="sm:w-3.5 sm:h-3.5" /> Featured
                                     </span>
                                 )}
                             </motion.div>
 
                             {/* Thumbnails */}
                             {images.length > 1 && (
-                                <div className="flex gap-3">
+                                <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2">
                                     {images.map((img, index) => (
                                         <button
                                             key={index}
                                             onClick={() => setActiveImage(index)}
-                                            className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-all flex items-center justify-center bg-gray-50 ${activeImage === index ? 'border-red-500' : 'border-gray-200 hover:border-gray-300'
+                                            className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all flex items-center justify-center bg-gray-50 flex-shrink-0 ${activeImage === index ? 'border-red-500' : 'border-gray-200 hover:border-gray-300'
                                                 }`}
                                         >
                                             <img src={img} alt="" className="w-full h-full object-contain p-1" />
@@ -238,28 +238,28 @@ export default function ProductDetailPage() {
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="p-6 lg:p-8 lg:border-l border-gray-100"
+                            className="p-4 sm:p-6 lg:p-8"
                         >
                             {/* Title */}
-                            <h1 className="text-3xl font-bold text-gray-900 mb-6">{product.name}</h1>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">{product.name}</h1>
 
                             {/* Description */}
                             {product.description && (
-                                <div className="mb-8">
-                                    <h2 className="text-lg font-semibold text-gray-900 mb-3">Description</h2>
-                                    <p className="text-gray-600 leading-relaxed">{product.description}</p>
+                                <div className="mb-6 sm:mb-8">
+                                    <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Description</h2>
+                                    <p className="text-gray-600 leading-relaxed text-sm sm:text-base">{product.description}</p>
                                 </div>
                             )}
 
                             {/* Key Features */}
                             {features.length > 0 && (
-                                <div className="mb-8">
-                                    <h2 className="text-lg font-semibold text-gray-900 mb-3">Key Features</h2>
+                                <div className="mb-6 sm:mb-8">
+                                    <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Key Features</h2>
                                     <ul className="space-y-2">
                                         {features.map((feature, index) => (
-                                            <li key={index} className="flex items-start gap-3">
-                                                <Check size={18} className="text-emerald-500 mt-0.5 flex-shrink-0" />
-                                                <span className="text-gray-600">{feature}</span>
+                                            <li key={index} className="flex items-start gap-2 sm:gap-3">
+                                                <Check size={16} className="sm:w-4.5 sm:h-4.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                                                <span className="text-gray-600 text-sm sm:text-base">{feature}</span>
                                             </li>
                                         ))}
                                     </ul>
@@ -270,9 +270,9 @@ export default function ProductDetailPage() {
                             {product.catalogue_pdf_url && (
                                 <button
                                     onClick={() => setShowCatalogueModal(true)}
-                                    className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl shadow-lg shadow-red-500/30 transition-all"
+                                    className="w-full flex items-center justify-center gap-2 sm:gap-3 py-3 sm:py-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg sm:rounded-xl shadow-lg shadow-red-500/30 transition-all text-sm sm:text-base"
                                 >
-                                    <FileText size={20} />
+                                    <FileText size={18} className="sm:w-5 sm:h-5" />
                                     Request Catalogue
                                 </button>
                             )}
@@ -296,20 +296,20 @@ export default function ProductDetailPage() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.95, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+                            className="bg-white rounded-lg sm:rounded-2xl shadow-xl w-full max-w-md overflow-hidden mx-4"
                         >
                             {submitted ? (
-                                <div className="p-8 text-center">
-                                    <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <Check size={32} className="text-emerald-500" />
+                                <div className="p-6 sm:p-8 text-center">
+                                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Check size={24} className="sm:w-8 sm:h-8 text-emerald-500" />
                                     </div>
-                                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Thank You!</h3>
-                                    <p className="text-gray-500">Your catalogue is downloading...</p>
+                                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Thank You!</h3>
+                                    <p className="text-gray-500 text-sm sm:text-base">Your catalogue is downloading...</p>
                                 </div>
                             ) : (
                                 <>
-                                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                                        <h2 className="text-xl font-semibold text-gray-900">Request Catalogue</h2>
+                                    <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-100">
+                                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Request Catalogue</h2>
                                         <button
                                             onClick={() => setShowCatalogueModal(false)}
                                             className="p-2 hover:bg-gray-100 rounded-lg"
@@ -318,13 +318,13 @@ export default function ProductDetailPage() {
                                         </button>
                                     </div>
 
-                                    <form onSubmit={handleCatalogueSubmit} className="p-6 space-y-4">
+                                    <form onSubmit={handleCatalogueSubmit} className="p-4 sm:p-6 space-y-4">
                                         {/* Product Name (readonly) */}
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">Product</label>
-                                            <div className="flex items-center gap-3 px-4 py-3 bg-gray-50 rounded-xl">
-                                                <Package size={18} className="text-gray-400" />
-                                                <span className="text-gray-700 font-medium">{product.name}</span>
+                                            <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 rounded-lg sm:rounded-xl">
+                                                <Package size={16} className="sm:w-4.5 sm:h-4.5 text-gray-400" />
+                                                <span className="text-gray-700 font-medium text-sm sm:text-base">{product.name}</span>
                                             </div>
                                         </div>
 
@@ -334,7 +334,7 @@ export default function ProductDetailPage() {
                                                 type="text"
                                                 value={formData.name}
                                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
+                                                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-red-500 text-sm sm:text-base"
                                                 placeholder="John Doe"
                                                 required
                                             />
@@ -346,7 +346,7 @@ export default function ProductDetailPage() {
                                                 type="tel"
                                                 value={formData.phone}
                                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
+                                                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-red-500 text-sm sm:text-base"
                                                 placeholder="+1 234 567 8900"
                                                 required
                                             />
@@ -358,7 +358,7 @@ export default function ProductDetailPage() {
                                                 type="email"
                                                 value={formData.email}
                                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-red-500"
+                                                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-200 rounded-lg sm:rounded-xl focus:outline-none focus:border-red-500 text-sm sm:text-base"
                                                 placeholder="john@example.com"
                                                 required
                                             />
@@ -367,16 +367,16 @@ export default function ProductDetailPage() {
                                         <button
                                             type="submit"
                                             disabled={submitting}
-                                            className="w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-xl disabled:opacity-50 transition-all"
+                                            className="w-full flex items-center justify-center gap-2 py-3 sm:py-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg sm:rounded-xl disabled:opacity-50 transition-all text-sm sm:text-base"
                                         >
                                             {submitting ? (
                                                 <>
-                                                    <Loader2 size={20} className="animate-spin" />
+                                                    <Loader2 size={18} className="sm:w-5 sm:h-5 animate-spin" />
                                                     Submitting...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Download size={20} />
+                                                    <Download size={18} className="sm:w-5 sm:h-5" />
                                                     Download Catalogue
                                                 </>
                                             )}

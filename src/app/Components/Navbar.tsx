@@ -194,6 +194,13 @@ export default function Navbar() {
             ...prev,
             [categorySlug]: data.subCategories || []
           }));
+          // Store products directly under this category
+          if (data.products && data.products.length > 0) {
+            setProducts(prev => ({
+              ...prev,
+              [`category-${categorySlug}`]: data.products
+            }));
+          }
         }
       } catch (error) {
         console.error('Failed to fetch subcategories:', error);
@@ -217,6 +224,13 @@ export default function Navbar() {
             ...prev,
             [subCategorySlug]: data.superSubCategories || []
           }));
+          // Store products directly under this subcategory
+          if (data.products && data.products.length > 0) {
+            setProducts(prev => ({
+              ...prev,
+              [`subcategory-${subCategorySlug}`]: data.products
+            }));
+          }
         }
       } catch (error) {
         console.error('Failed to fetch super subcategories:', error);
@@ -265,7 +279,7 @@ export default function Navbar() {
     { href: '/products', label: 'Products' },
     { href: '/Aboutus', label: 'About' },
     { href: '/Services', label: 'Services' },
-    { href: '/Gallery', label: 'Gallery' },
+    { href: '/Certificates', label: 'Certificates' },
   ];
 
   const isActive = (href: string) => pathname === href;
@@ -322,7 +336,7 @@ export default function Navbar() {
                     {/* Dropdown Menu */}
                     {productsOpen && (
                       <div
-                        className="absolute top-full left-3/2 -translate-x-1/2 mt-6 bg-white rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 z-50 w-[98vw] md:w-[95vw] lg:w-[92vw] xl:w-[90vw] max-w-[1400px] overflow-hidden"
+                        className="absolute top-full left-3/2 -translate-x-1/2 mt-6 bg-white rounded-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 z-50 w-[900px] md:w-[1000px] lg:w-[1100px] xl:w-[1200px] max-w-[90vw] overflow-hidden"
                         onMouseLeave={() => {
                           setProductsOpen(false);
                           setHoveredCategory(null);
@@ -330,9 +344,9 @@ export default function Navbar() {
                           setHoveredSuperSubCategory(null);
                         }}
                       >
-                        <div className="flex min-h-[350px] md:min-h-[400px] lg:min-h-[420px] max-h-[480px] md:max-h-[540px] lg:max-h-[580px]">
+                        <div className="flex min-h-[350px] md:min-h-[400px] lg:min-h-[420px] max-h-[450px] md:max-h-[500px] lg:max-h-[520px] overflow-x-auto">
                           {/* Column 1 - Categories (always visible) */}
-                          <div className="w-44 md:w-48 lg:w-52 xl:w-56 bg-gradient-to-br from-slate-50 via-white to-slate-50 py-3 md:py-4 flex-shrink-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent border-r border-gray-100">
+                          <div className="w-56 bg-gradient-to-br from-slate-50 via-white to-slate-50 py-3 md:py-4 flex-shrink-0 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent border-r border-gray-100">
                             <div className="px-3 md:px-4 lg:px-5 mb-2 md:mb-3">
                               <h3 className="text-[10px] md:text-xs font-bold text-gray-800 mb-0.5">
                                 Categories
@@ -366,9 +380,18 @@ export default function Navbar() {
                                     <Link
                                       href={`/products/${category.slug}`}
                                       onClick={() => setProductsOpen(false)}
-                                      className="flex items-center justify-between px-2 md:px-2.5 lg:px-3 py-2 md:py-2.5 text-[10px] md:text-xs"
+                                      className="flex items-center gap-2 px-2 md:px-2.5 lg:px-3 py-2 md:py-2.5 text-[10px] md:text-xs"
                                     >
-                                      <span className={`font-medium transition-colors ${
+                                      {category.image_url && (
+                                        <div className="w-6 h-6 md:w-7 md:h-7 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                          <img 
+                                            src={category.image_url} 
+                                            alt={category.name} 
+                                            className="w-full h-full object-cover" 
+                                          />
+                                        </div>
+                                      )}
+                                      <span className={`font-medium transition-colors flex-1 ${
                                         hoveredCategory === category.slug
                                           ? 'text-red-600'
                                           : 'text-gray-700 group-hover:text-gray-900'
@@ -377,7 +400,7 @@ export default function Navbar() {
                                       </span>
                                       <ChevronRight 
                                         size={12} 
-                                        className={`md:size-3.5 transition-all ${
+                                        className={`md:size-3.5 transition-all flex-shrink-0 ${
                                           hoveredCategory === category.slug
                                             ? 'text-red-600 translate-x-1'
                                             : 'text-gray-400 group-hover:text-gray-600'
@@ -399,7 +422,7 @@ export default function Navbar() {
 
                           {/* Column 2 - Subcategories with Images */}
                           {hoveredCategory && (
-                            <div className="w-[220px] md:w-[260px] lg:w-[300px] xl:w-[320px] bg-white px-3 md:px-4 lg:px-5 py-3 md:py-4 overflow-y-auto animate-slideIn scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent border-r border-gray-100">
+                            <div className="w-72 bg-white px-3 md:px-4 lg:px-5 py-3 md:py-4 max-h-[450px] md:max-h-[500px] lg:max-h-[520px] overflow-y-auto animate-slideIn scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent border-r border-gray-100 flex-shrink-0">
                               <div className="mb-2 md:mb-3">
                                 <h3 className="text-xs md:text-sm font-bold text-gray-900 mb-0.5">
                                   {categories.find(c => c.slug === hoveredCategory)?.name}
@@ -422,16 +445,25 @@ export default function Navbar() {
                                       <Link
                                         href={`/products/${hoveredCategory}/${subCategory.slug}`}
                                         onClick={() => setProductsOpen(false)}
-                                        className={`flex items-center justify-between px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all ${
+                                        className={`flex items-center gap-2 px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all ${
                                           hoveredSubCategory === subCategory.slug
                                             ? 'bg-red-50 text-red-600'
                                             : 'hover:bg-gray-50 text-gray-700'
                                         }`}
                                       >
-                                        <span className="text-xs md:text-sm font-medium">{subCategory.name}</span>
+                                        {subCategory.image_url && (
+                                          <div className="w-6 h-6 md:w-7 md:h-7 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img 
+                                              src={subCategory.image_url} 
+                                              alt={subCategory.name} 
+                                              className="w-full h-full object-cover" 
+                                            />
+                                          </div>
+                                        )}
+                                        <span className="text-xs md:text-sm font-medium flex-1">{subCategory.name}</span>
                                         <ChevronRight 
                                           size={14} 
-                                          className={`md:size-4 transition-transform group-hover:translate-x-1 ${
+                                          className={`md:size-4 transition-transform group-hover:translate-x-1 flex-shrink-0 ${
                                             hoveredSubCategory === subCategory.slug ? 'text-red-600' : 'text-gray-400'
                                           }`}
                                         />
@@ -451,10 +483,10 @@ export default function Navbar() {
                                       onClick={() => setProductsOpen(false)}
                                       className="group block"
                                     >
-                                      <div className="flex items-center gap-3 px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all hover:bg-red-50">
+                                      <div className="flex items-center gap-2 px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all hover:bg-red-50">
                                         {product.image_url && (
-                                          <div className="w-12 h-12 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
-                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-contain p-1" />
+                                          <div className="w-6 h-6 md:w-7 md:h-7 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                                           </div>
                                         )}
                                         <span className="text-xs md:text-sm font-medium text-gray-700 group-hover:text-red-600 flex-1">{product.name}</span>
@@ -480,7 +512,7 @@ export default function Navbar() {
 
                           {/* Column 3 - Super Subcategories with Images */}
                           {hoveredSubCategory && (
-                            <div className="w-[220px] md:w-[260px] lg:w-[300px] xl:w-[320px] bg-white px-3 md:px-4 lg:px-5 py-3 md:py-4 overflow-y-auto border-l border-gray-100 animate-slideIn scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                            <div className="w-72 bg-white px-3 md:px-4 lg:px-5 py-3 md:py-4 max-h-[450px] md:max-h-[500px] lg:max-h-[520px] overflow-y-auto border-l border-gray-100 animate-slideIn scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-shrink-0">
                               <div className="mb-2 md:mb-3">
                                 <h3 className="text-xs md:text-sm font-bold text-gray-900 mb-0.5">
                                   {subCategories[hoveredCategory!]?.find(s => s.slug === hoveredSubCategory)?.name}
@@ -503,16 +535,25 @@ export default function Navbar() {
                                       <Link
                                         href={`/products/${hoveredCategory}/${hoveredSubCategory}/${superSub.slug}`}
                                         onClick={() => setProductsOpen(false)}
-                                        className={`flex items-center justify-between px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all ${
+                                        className={`flex items-center gap-2 px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all ${
                                           hoveredSuperSubCategory === superSub.slug
                                             ? 'bg-red-50 text-red-600'
                                             : 'hover:bg-gray-50 text-gray-700'
                                         }`}
                                       >
-                                        <span className="text-xs md:text-sm font-medium">{superSub.name}</span>
+                                        {superSub.image_url && (
+                                          <div className="w-6 h-6 md:w-7 md:h-7 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img 
+                                              src={superSub.image_url} 
+                                              alt={superSub.name} 
+                                              className="w-full h-full object-cover" 
+                                            />
+                                          </div>
+                                        )}
+                                        <span className="text-xs md:text-sm font-medium flex-1">{superSub.name}</span>
                                         <ChevronRight 
                                           size={14} 
-                                          className={`md:size-4 transition-transform group-hover:translate-x-1 ${
+                                          className={`md:size-4 transition-transform group-hover:translate-x-1 flex-shrink-0 ${
                                             hoveredSuperSubCategory === superSub.slug ? 'text-red-600' : 'text-gray-400'
                                           }`}
                                         />
@@ -532,10 +573,10 @@ export default function Navbar() {
                                       onClick={() => setProductsOpen(false)}
                                       className="group block"
                                     >
-                                      <div className="flex items-center gap-3 px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all hover:bg-red-50">
+                                      <div className="flex items-center gap-2 px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all hover:bg-red-50">
                                         {product.image_url && (
-                                          <div className="w-12 h-12 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
-                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-contain p-1" />
+                                          <div className="w-6 h-6 md:w-7 md:h-7 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                                           </div>
                                         )}
                                         <span className="text-xs md:text-sm font-medium text-gray-700 group-hover:text-red-600 flex-1">{product.name}</span>
@@ -561,7 +602,7 @@ export default function Navbar() {
 
                           {/* Column 4 - Products with Images */}
                           {hoveredSuperSubCategory && (
-                            <div className="w-[220px] md:w-[260px] lg:w-[300px] xl:w-[320px] bg-white px-3 md:px-4 lg:px-5 py-3 md:py-4 overflow-y-auto border-l border-gray-100 animate-slideIn scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                            <div className="w-72 bg-white px-3 md:px-4 lg:px-5 py-3 md:py-4 max-h-[450px] md:max-h-[500px] lg:max-h-[520px] overflow-y-auto border-l border-gray-100 animate-slideIn scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent flex-shrink-0">
                               <div className="mb-2 md:mb-3">
                                 <h3 className="text-xs md:text-sm font-bold text-gray-900 mb-0.5">
                                   Products
@@ -582,11 +623,16 @@ export default function Navbar() {
                                       onClick={() => setProductsOpen(false)}
                                       className="group block"
                                     >
-                                      <div className="flex items-center justify-between px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all hover:bg-gray-50 text-gray-700">
-                                        <span className="text-xs md:text-sm font-medium group-hover:text-red-600">{product.name}</span>
+                                      <div className="flex items-center gap-2 px-2 md:px-3 py-2 md:py-2.5 rounded-lg transition-all hover:bg-gray-50 text-gray-700">
+                                        {product.image_url && (
+                                          <div className="w-6 h-6 md:w-7 md:h-7 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                          </div>
+                                        )}
+                                        <span className="text-xs md:text-sm font-medium group-hover:text-red-600 flex-1">{product.name}</span>
                                         <ChevronRight 
                                           size={14} 
-                                          className="md:size-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-red-600"
+                                          className="md:size-4 text-gray-400 transition-transform group-hover:translate-x-1 group-hover:text-red-600 flex-shrink-0"
                                         />
                                       </div>
                                     </Link>
@@ -700,7 +746,14 @@ export default function Navbar() {
                                       onClick={() => handleMobileCategoryClick(category.slug)}
                                       className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-700 hover:bg-white rounded-lg transition-colors"
                                     >
-                                      <span>{category.name}</span>
+                                      <div className="flex items-center gap-2 flex-1">
+                                        {category.image_url && (
+                                          <div className="w-6 h-6 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={category.image_url} alt={category.name} className="w-full h-full object-cover" />
+                                          </div>
+                                        )}
+                                        <span>{category.name}</span>
+                                      </div>
                                       <ChevronRight size={16} className="text-gray-400" />
                                     </button>
                                   ))}
@@ -740,9 +793,46 @@ export default function Navbar() {
                                       onClick={() => handleMobileSubCategoryClick(subCategory.slug)}
                                       className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-700 hover:bg-white rounded-lg transition-colors"
                                     >
-                                      <span>{subCategory.name}</span>
+                                      <div className="flex items-center gap-2 flex-1">
+                                        {subCategory.image_url && (
+                                          <div className="w-6 h-6 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={subCategory.image_url} alt={subCategory.name} className="w-full h-full object-cover" />
+                                          </div>
+                                        )}
+                                        <span>{subCategory.name}</span>
+                                      </div>
                                       <ChevronRight size={16} className="text-gray-400" />
                                     </button>
+                                  ))}
+                                </div>
+                              ) : products[`category-${mobileSelectedCategory}`]?.length > 0 ? (
+                                <div className="space-y-1 px-2 py-2">
+                                  <div className="mb-3 px-2">
+                                    <p className="text-xs text-gray-500">Products in this category</p>
+                                  </div>
+                                  {products[`category-${mobileSelectedCategory}`].map((product) => (
+                                    <Link
+                                      key={product.id}
+                                      href={`/product/${product.slug}`}
+                                      onClick={() => {
+                                        setIsOpen(false);
+                                        setMobileProductsOpen(false);
+                                        setMobileSelectedCategory(null);
+                                        setMobileSelectedSubCategory(null);
+                                        setMobileSelectedSuperSubCategory(null);
+                                      }}
+                                      className="flex items-center justify-between px-3 py-2.5 text-sm text-gray-700 hover:bg-white rounded-lg transition-colors"
+                                    >
+                                      <div className="flex items-center gap-2 flex-1">
+                                        {product.image_url && (
+                                          <div className="w-6 h-6 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                          </div>
+                                        )}
+                                        <span>{product.name}</span>
+                                      </div>
+                                      <ChevronRight size={16} className="text-red-600" />
+                                    </Link>
                                   ))}
                                 </div>
                               ) : (
@@ -780,9 +870,46 @@ export default function Navbar() {
                                       onClick={() => handleMobileSuperSubCategoryClick(superSub.slug)}
                                       className="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-700 hover:bg-white rounded-lg transition-colors"
                                     >
-                                      <span>{superSub.name}</span>
+                                      <div className="flex items-center gap-2 flex-1">
+                                        {superSub.image_url && (
+                                          <div className="w-6 h-6 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={superSub.image_url} alt={superSub.name} className="w-full h-full object-cover" />
+                                          </div>
+                                        )}
+                                        <span>{superSub.name}</span>
+                                      </div>
                                       <ChevronRight size={16} className="text-gray-400" />
                                     </button>
+                                  ))}
+                                </div>
+                              ) : products[`subcategory-${mobileSelectedSubCategory}`]?.length > 0 ? (
+                                <div className="space-y-1 px-2 py-2">
+                                  <div className="mb-3 px-2">
+                                    <p className="text-xs text-gray-500">Products in this subcategory</p>
+                                  </div>
+                                  {products[`subcategory-${mobileSelectedSubCategory}`].map((product) => (
+                                    <Link
+                                      key={product.id}
+                                      href={`/product/${product.slug}`}
+                                      onClick={() => {
+                                        setIsOpen(false);
+                                        setMobileProductsOpen(false);
+                                        setMobileSelectedCategory(null);
+                                        setMobileSelectedSubCategory(null);
+                                        setMobileSelectedSuperSubCategory(null);
+                                      }}
+                                      className="flex items-center justify-between px-3 py-2.5 text-sm text-gray-700 hover:bg-white rounded-lg transition-colors"
+                                    >
+                                      <div className="flex items-center gap-2 flex-1">
+                                        {product.image_url && (
+                                          <div className="w-6 h-6 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                          </div>
+                                        )}
+                                        <span>{product.name}</span>
+                                      </div>
+                                      <ChevronRight size={16} className="text-red-600" />
+                                    </Link>
                                   ))}
                                 </div>
                               ) : (
@@ -825,7 +952,14 @@ export default function Navbar() {
                                       }}
                                       className="flex items-center justify-between px-3 py-2.5 text-sm text-gray-700 hover:bg-white rounded-lg transition-colors"
                                     >
-                                      <span>{product.name}</span>
+                                      <div className="flex items-center gap-2 flex-1">
+                                        {product.image_url && (
+                                          <div className="w-6 h-6 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                                          </div>
+                                        )}
+                                        <span>{product.name}</span>
+                                      </div>
                                       <ChevronRight size={16} className="text-red-600" />
                                     </Link>
                                   ))}
