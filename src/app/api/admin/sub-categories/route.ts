@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/lib/supabase';
+import { withAdminAuth } from '@/app/lib/auth';
 
-// GET all sub categories (admin)
-export async function GET() {
+// GET all sub categories (admin) - PROTECTED
+export const GET = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -25,10 +26,10 @@ export async function GET() {
         console.error('Admin sub categories GET error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
 
-// POST - Create new sub category
-export async function POST(request: NextRequest) {
+// POST - Create new sub category - PROTECTED
+export const POST = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -56,10 +57,10 @@ export async function POST(request: NextRequest) {
         console.error('Admin sub categories POST error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
 
-// PUT - Update sub category
-export async function PUT(request: NextRequest) {
+// PUT - Update sub category - PROTECTED
+export const PUT = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -88,10 +89,10 @@ export async function PUT(request: NextRequest) {
         console.error('Admin sub categories PUT error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
 
-// DELETE - Delete sub category
-export async function DELETE(request: NextRequest) {
+// DELETE - Delete sub category - PROTECTED
+export const DELETE = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -152,4 +153,4 @@ export async function DELETE(request: NextRequest) {
         console.error('Admin sub categories DELETE error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});

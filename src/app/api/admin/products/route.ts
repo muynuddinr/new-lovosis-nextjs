@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/lib/supabase';
+import { withAdminAuth } from '@/app/lib/auth';
 
-// GET all products (admin)
-export async function GET() {
+// GET all products (admin) - PROTECTED
+export const GET = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -36,10 +37,10 @@ export async function GET() {
         console.error('Admin products GET error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
 
-// POST - Create new product
-export async function POST(request: NextRequest) {
+// POST - Create new product - PROTECTED
+export const POST = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -80,10 +81,10 @@ export async function POST(request: NextRequest) {
         console.error('Admin products POST error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
 
-// PUT - Update product
-export async function PUT(request: NextRequest) {
+// PUT - Update product - PROTECTED
+export const PUT = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -124,10 +125,10 @@ export async function PUT(request: NextRequest) {
         console.error('Admin products PUT error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
 
-// DELETE - Delete product
-export async function DELETE(request: NextRequest) {
+// DELETE - Delete product - PROTECTED
+export const DELETE = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -154,4 +155,4 @@ export async function DELETE(request: NextRequest) {
         console.error('Admin products DELETE error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});

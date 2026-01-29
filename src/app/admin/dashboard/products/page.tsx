@@ -535,9 +535,9 @@ export default function ProductsPage() {
         let matchesDescription = true;
         if (filterDescription) {
             if (filterDescription === 'with-description') {
-                matchesDescription = p.description && p.description.trim().length > 0;
+                matchesDescription = typeof p.description === 'string' && p.description.trim().length > 0;
             } else if (filterDescription === 'without-description') {
-                matchesDescription = !p.description || p.description.trim().length === 0;
+                matchesDescription = !p.description || (typeof p.description === 'string' && p.description.trim().length === 0);
             }
         }
         
@@ -545,9 +545,9 @@ export default function ProductsPage() {
         let matchesPdf = true;
         if (filterPdf) {
             if (filterPdf === 'with-pdf') {
-                matchesPdf = p.catalogue_pdf_url && p.catalogue_pdf_url.trim().length > 0;
+                matchesPdf = typeof p.catalogue_pdf_url === 'string' && p.catalogue_pdf_url.trim().length > 0;
             } else if (filterPdf === 'without-pdf') {
-                matchesPdf = !p.catalogue_pdf_url || p.catalogue_pdf_url.trim().length === 0;
+                matchesPdf = !p.catalogue_pdf_url || (typeof p.catalogue_pdf_url === 'string' && p.catalogue_pdf_url.trim().length === 0);
             }
         }
         
