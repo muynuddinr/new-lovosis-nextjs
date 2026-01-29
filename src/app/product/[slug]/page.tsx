@@ -187,95 +187,155 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Product Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-                <div className="bg-white rounded-lg sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="grid grid-cols-1 gap-0">
-                        {/* Image Gallery */}
-                        <div className="p-4 sm:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 lg:py-12">
+                <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                        {/* Image Gallery - Left Side */}
+                        <div className="p-4 sm:p-6 lg:p-10 bg-gradient-to-br from-gray-50 via-white to-gray-50 lg:border-r border-gray-100">
                             {/* Main Image */}
                             <motion.div
                                 key={activeImage}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="aspect-square bg-gray-100 rounded-lg sm:rounded-xl relative overflow-hidden mb-4 flex items-center justify-center"
+                                initial={{ opacity: 0, scale: 0.98 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3 }}
+                                className="aspect-square bg-white rounded-2xl relative overflow-hidden mb-4 lg:mb-6 flex items-center justify-center shadow-lg border border-gray-100"
                             >
                                 {images.length > 0 ? (
                                     <img
                                         src={images[activeImage]}
                                         alt={product.name}
-                                        className="w-full h-full object-contain p-2 sm:p-4"
+                                        className="w-full h-full object-contain p-4 sm:p-6 lg:p-8"
                                     />
                                 ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <Package className="w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 text-gray-300" />
+                                    <div className="w-full h-full flex items-center justify-center bg-gray-50">
+                                        <Package className="w-20 h-20 sm:w-28 sm:h-28 lg:w-36 lg:h-36 text-gray-200" />
                                     </div>
                                 )}
                                 {product.featured && (
-                                    <span className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-amber-500 text-white text-xs sm:text-sm font-semibold px-2 py-1 sm:px-3 sm:py-1.5 rounded-full flex items-center gap-1">
-                                        <Star size={12} className="sm:w-3.5 sm:h-3.5" /> Featured
+                                    <span className="absolute top-3 right-3 sm:top-4 sm:right-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs sm:text-sm font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full flex items-center gap-1.5 shadow-lg">
+                                        <Star size={14} className="sm:w-4 sm:h-4 fill-current" /> Featured
                                     </span>
+                                )}
+
+                                {/* Image Navigation Arrows */}
+                                {images.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={() => setActiveImage(prev => prev > 0 ? prev - 1 : images.length - 1)}
+                                            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
+                                        >
+                                            <ChevronLeft size={20} className="text-gray-700" />
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveImage(prev => prev < images.length - 1 ? prev + 1 : 0)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110"
+                                        >
+                                            <ChevronRight size={20} className="text-gray-700" />
+                                        </button>
+                                    </>
                                 )}
                             </motion.div>
 
                             {/* Thumbnails */}
                             {images.length > 1 && (
-                                <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2">
+                                <div className="flex gap-3 sm:gap-4 justify-center">
                                     {images.map((img, index) => (
                                         <button
                                             key={index}
                                             onClick={() => setActiveImage(index)}
-                                            className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all flex items-center justify-center bg-gray-50 flex-shrink-0 ${activeImage === index ? 'border-red-500' : 'border-gray-200 hover:border-gray-300'
+                                            className={`w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-xl overflow-hidden border-2 transition-all flex items-center justify-center bg-white shadow-md flex-shrink-0 hover:shadow-lg ${activeImage === index
+                                                    ? 'border-red-500 ring-2 ring-red-500/20 scale-105'
+                                                    : 'border-gray-200 hover:border-gray-300'
                                                 }`}
                                         >
-                                            <img src={img} alt="" className="w-full h-full object-contain p-1" />
+                                            <img src={img} alt="" className="w-full h-full object-contain p-2" />
                                         </button>
                                     ))}
                                 </div>
                             )}
+
+                            {/* Image Counter */}
+                            {images.length > 1 && (
+                                <div className="flex justify-center mt-4">
+                                    <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                                        {activeImage + 1} / {images.length} images
+                                    </span>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Product Info */}
+                        {/* Product Info - Right Side */}
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="p-4 sm:p-6 lg:p-8"
+                            transition={{ duration: 0.4, delay: 0.1 }}
+                            className="p-4 sm:p-6 lg:p-10 flex flex-col"
                         >
+                            {/* Status Badge */}
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-full">
+                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                    In Stock
+                                </span>
+                            </div>
+
                             {/* Title */}
-                            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">{product.name}</h1>
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 lg:mb-6 leading-tight">
+                                {product.name}
+                            </h1>
 
                             {/* Description */}
                             {product.description && (
-                                <div className="mb-6 sm:mb-8">
-                                    <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Description</h2>
-                                    <p className="text-gray-600 leading-relaxed text-sm sm:text-base">{product.description}</p>
+                                <div className="mb-6 lg:mb-8">
+                                    <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">Description</h2>
+                                    <p className="text-gray-600 leading-relaxed text-base lg:text-lg">{product.description}</p>
                                 </div>
                             )}
 
+                            {/* Divider */}
+                            <div className="border-t border-gray-100 my-4 lg:my-6"></div>
+
                             {/* Key Features */}
                             {features.length > 0 && (
-                                <div className="mb-6 sm:mb-8">
-                                    <h2 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3">Key Features</h2>
-                                    <ul className="space-y-2">
+                                <div className="mb-6 lg:mb-8 flex-1">
+                                    <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Key Features</h2>
+                                    <ul className="space-y-3">
                                         {features.map((feature, index) => (
-                                            <li key={index} className="flex items-start gap-2 sm:gap-3">
-                                                <Check size={16} className="sm:w-4.5 sm:h-4.5 text-emerald-500 mt-0.5 flex-shrink-0" />
-                                                <span className="text-gray-600 text-sm sm:text-base">{feature}</span>
+                                            <li key={index} className="flex items-start gap-3">
+                                                <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                    <Check size={12} className="text-emerald-600" />
+                                                </div>
+                                                <span className="text-gray-700 text-base lg:text-lg">{feature}</span>
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
                             )}
 
-                            {/* Request Catalogue Button */}
-                            {product.catalogue_pdf_url && (
-                                <button
-                                    onClick={() => setShowCatalogueModal(true)}
-                                    className="w-full flex items-center justify-center gap-2 sm:gap-3 py-3 sm:py-4 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-semibold rounded-lg sm:rounded-xl shadow-lg shadow-red-500/30 transition-all text-sm sm:text-base"
+                            {/* Action Buttons */}
+                            <div className="mt-auto pt-6 lg:pt-8 border-t border-gray-100 space-y-3">
+                                {/* Request Catalogue Button */}
+                                {product.catalogue_pdf_url && (
+                                    <button
+                                        onClick={() => setShowCatalogueModal(true)}
+                                        className="w-full flex items-center justify-center gap-3 py-4 lg:py-5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold rounded-xl lg:rounded-2xl shadow-lg shadow-red-500/25 transition-all text-base lg:text-lg hover:shadow-xl hover:shadow-red-500/30 hover:-translate-y-0.5"
+                                    >
+                                        <FileText size={20} className="lg:w-6 lg:h-6" />
+                                        Download Catalogue
+                                    </button>
+                                )}
+
+                                {/* Contact Button */}
+                                <Link
+                                    href="/Contact"
+                                    className="w-full flex items-center justify-center gap-3 py-4 lg:py-5 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl lg:rounded-2xl transition-all text-base lg:text-lg hover:-translate-y-0.5"
                                 >
-                                    <FileText size={18} className="sm:w-5 sm:h-5" />
-                                    Request Catalogue
-                                </button>
-                            )}
+                                    <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    Contact for Inquiry
+                                </Link>
+                            </div>
                         </motion.div>
                     </div>
                 </div>

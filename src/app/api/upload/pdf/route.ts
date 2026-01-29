@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/lib/supabase';
+import { withAdminAuth } from '@/app/lib/auth';
 
-export async function POST(request: NextRequest) {
+// POST - Upload PDF - PROTECTED (Admin only)
+export const POST = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -61,4 +63,5 @@ export async function POST(request: NextRequest) {
         console.error('PDF Upload error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
+

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/lib/supabase';
+import { withAdminAuth } from '@/app/lib/auth';
 
-export async function POST(request: NextRequest) {
+// POST - Upload image - PROTECTED (Admin only)
+export const POST = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -63,10 +65,10 @@ export async function POST(request: NextRequest) {
         console.error('Upload API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
 
-// DELETE - Remove image from storage
-export async function DELETE(request: NextRequest) {
+// DELETE - Remove image from storage - PROTECTED (Admin only)
+export const DELETE = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -94,4 +96,5 @@ export async function DELETE(request: NextRequest) {
         console.error('Delete API error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
+

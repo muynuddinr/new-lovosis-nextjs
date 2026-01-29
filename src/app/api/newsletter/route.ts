@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/lib/supabase';
+import { withAdminAuth } from '@/app/lib/auth';
 
-// POST - Subscribe to newsletter
+// POST - Subscribe to newsletter - PUBLIC (Users can subscribe)
 export async function POST(request: NextRequest) {
     try {
         if (!supabase) {
@@ -45,8 +46,8 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// GET - Admin fetch all subscriptions
-export async function GET() {
+// GET - Admin fetch all subscriptions - PROTECTED (Admin only)
+export const GET = withAdminAuth(async () => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -67,10 +68,10 @@ export async function GET() {
         console.error('Newsletter GET error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
 
-// DELETE - Delete subscription
-export async function DELETE(request: NextRequest) {
+// DELETE - Delete subscription - PROTECTED (Admin only)
+export const DELETE = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -98,4 +99,5 @@ export async function DELETE(request: NextRequest) {
         console.error('Newsletter DELETE error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
+

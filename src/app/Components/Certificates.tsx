@@ -25,7 +25,7 @@ const SAMPLE_CERTIFICATES: GalleryImage[] = [
     {
         _id: '1',
         title: 'Company Recognition Certificate',
-        description: 'Official recognition for outstanding achievements in business excellence and industry leadership.',
+        description: 'Awarded for outstanding contribution to industry excellence and innovation in technology solutions.',
         images: [img1.src],
         category: 'Recognition',
         date: '2023-01-15'
@@ -41,7 +41,7 @@ const SAMPLE_CERTIFICATES: GalleryImage[] = [
     {
         _id: '3',
         title: 'IEC 61058-1 Compliance',
-        description: 'International compliance certification for electrical safety in switch components and appliances.',
+        description: 'Complies with IEC 61058-1 international standard for safety requirements of switch components for appliances, ensuring product reliability and safety.',
         images: [img3.src],
         category: 'Compliance',
         date: '2023-03-10'
@@ -49,7 +49,7 @@ const SAMPLE_CERTIFICATES: GalleryImage[] = [
     {
         _id: '4',
         title: 'IEC 61010-1 Compliance',
-        description: 'Safety standards certification for measurement, control, and laboratory equipment systems.',
+        description: 'Complies with IEC 61010-1 international standard for safety requirements of electrical equipment for measurement, control, and laboratory use.',
         images: [img4.src],
         category: 'Compliance',
         date: '2023-04-05'
@@ -57,7 +57,7 @@ const SAMPLE_CERTIFICATES: GalleryImage[] = [
     {
         _id: '5',
         title: 'ISO 45001:2018 Certificate',
-        description: 'Occupational Health and Safety Management System certification for workplace safety excellence.',
+        description: 'ISO 45001:2018 Occupational Health & Safety Management Systems - Demonstrating our commitment to workplace safety and employee wellbeing.',
         images: [img5.src],
         category: 'ISO',
         date: '2023-05-12'
@@ -65,7 +65,7 @@ const SAMPLE_CERTIFICATES: GalleryImage[] = [
     {
         _id: '6',
         title: 'ISO 14001:2015 Certificate',
-        description: 'Environmental Management System certification demonstrating commitment to sustainable practices.',
+        description: 'ISO 14001:2015 Environmental Management Systems - Certified for environmental responsibility and sustainable business practices.',
         images: [img6.src],
         category: 'ISO',
         date: '2023-06-18'
@@ -73,7 +73,7 @@ const SAMPLE_CERTIFICATES: GalleryImage[] = [
     {
         _id: '7',
         title: 'ISO 9001:2015 Certificate',
-        description: 'Quality Management System certification ensuring consistent product and service excellence.',
+        description: 'ISO 9001:2015 Quality Management Systems - Certified for maintaining the highest standards of quality in our products and services.',
         images: [img7.src],
         category: 'ISO',
         date: '2023-07-22'
@@ -81,7 +81,7 @@ const SAMPLE_CERTIFICATES: GalleryImage[] = [
     {
         _id: '8',
         title: 'GMP Certificate',
-        description: 'Good Manufacturing Practice certification for highest standards in manufacturing processes and quality assurance.',
+        description: 'GMP (Good Manufacturing Practice) - Certified for following international manufacturing standards and quality control processes.',
         images: [img8.src],
         category: 'Manufacturing',
         date: '2023-08-30'
@@ -89,7 +89,7 @@ const SAMPLE_CERTIFICATES: GalleryImage[] = [
     {
         _id: '9',
         title: 'Certificate of Compliance',
-        description: 'International compliance certification meeting global standards for product safety and performance.',
+        description: 'CERTIFICATE Of Compliance - Verified compliance with industry regulations and standards for operational excellence.',
         images: [img9.src],
         category: 'Compliance',
         date: '2023-09-14'
@@ -160,12 +160,12 @@ export default function Certificates() {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
                             Our <span className="text-transparent bg-gradient-to-r from-red-600 via-red-500 to-orange-500 bg-clip-text">Accreditations</span>
                         </h1>
                         <p className="text-base md:text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                            Lovosis is proud to hold multiple international certifications and quality standards. 
+                            Lovosis is proud to hold multiple international certifications and quality standards.
                             Our commitment to excellence is validated by recognized industry bodies and organizations.
                         </p>
                     </div>
@@ -174,50 +174,102 @@ export default function Certificates() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                     {isLoading ? (
                         [...Array(9)].map((_, i) => (
-                            <div key={i} className="h-96 animate-pulse bg-gray-200 rounded-2xl shadow-lg" />
+                            <div key={i} className="h-[420px] animate-pulse rounded-3xl overflow-hidden">
+                                <div className="h-full bg-gradient-to-br from-gray-200 via-gray-100 to-gray-200" />
+                            </div>
                         ))
                     ) : (
-                        certificateItems.map((itemData) => (
+                        certificateItems.map((itemData, index) => (
                             <div
                                 key={itemData._id}
-                                className={`group relative h-96 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 cursor-pointer flex flex-col overflow-hidden ${selectedItem?._id === itemData._id ? 'hidden' : ''}`}
+                                className={`group relative h-[420px] rounded-3xl cursor-pointer overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 ${selectedItem?._id === itemData._id ? 'hidden' : ''}`}
                                 onClick={() => {
                                     setSelectedItem(itemData);
                                     setCurrentImageIndex(0);
                                 }}
                             >
-                                {itemData.images && itemData.images.length > 0 ? (
-                                    <>
-                                        <div className="flex-1 flex items-center justify-center p-5 bg-white">
-                                            <div className="w-full max-w-xs bg-gray-50 rounded-lg p-5 border border-gray-100 flex items-center justify-center">
-                                                <Image
-                                                    src={itemData.images[0]}
-                                                    alt={itemData.title}
-                                                    width={360}
-                                                    height={440}
-                                                    className="object-contain w-auto h-auto max-w-full max-h-80"
-                                                />
-                                            </div>
-                                        </div>
+                                {/* Card Background with Gradient Border Effect */}
+                                <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 via-orange-400/10 to-amber-500/20 rounded-3xl p-[2px] transition-all duration-500 group-hover:from-red-500/40 group-hover:via-orange-400/30 group-hover:to-amber-500/40">
+                                    <div className="h-full w-full bg-white rounded-3xl" />
+                                </div>
 
-                                        <div className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-gray-50 to-white border-t border-gray-200 flex items-center justify-center">
-                                            <h3 className="text-gray-900 font-bold text-sm text-center leading-snug">{itemData.title}</h3>
-                                        </div>
+                                {/* Card Content Container */}
+                                <div className="relative h-full flex flex-col rounded-3xl overflow-hidden shadow-lg group-hover:shadow-2xl group-hover:shadow-red-500/10 transition-all duration-500">
+                                    {itemData.images && itemData.images.length > 0 ? (
+                                        <>
+                                            {/* Image Count Badge */}
+                                            {itemData.images.length > 1 && (
+                                                <div className="absolute top-4 right-4 z-20">
+                                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-black/70 backdrop-blur-md rounded-full">
+                                                        <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                        </svg>
+                                                        <span className="text-white text-xs font-bold">{itemData.images.length}</span>
+                                                    </div>
+                                                </div>
+                                            )}
 
-                                        {itemData.images.length > 1 && (
-                                            <div className="absolute top-3 right-3 z-20 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full">
-                                                <p className="text-white text-xs font-bold">{currentImageIndex + 1}/{itemData.images.length}</p>
+                                            {/* Image Container */}
+                                            <div className="flex-1 flex items-center justify-center p-6 pt-14 bg-gradient-to-br from-gray-50/80 via-white to-gray-50/80">
+                                                <div className="relative w-full h-full flex items-center justify-center">
+                                                    {/* Decorative Elements */}
+                                                    <div className="absolute inset-0 flex items-center justify-center opacity-30">
+                                                        <div className="w-48 h-48 rounded-full bg-gradient-to-br from-red-100 to-orange-100 blur-3xl" />
+                                                    </div>
+
+                                                    {/* Certificate Image */}
+                                                    <div className="relative z-10 p-4 bg-white rounded-2xl shadow-md border border-gray-100/80 transition-transform duration-500 group-hover:scale-105 group-hover:shadow-xl">
+                                                        <Image
+                                                            src={itemData.images[0]}
+                                                            alt={itemData.title}
+                                                            width={280}
+                                                            height={200}
+                                                            className="object-contain w-auto h-auto max-w-full max-h-48 rounded-lg"
+                                                        />
+                                                    </div>
+                                                </div>
                                             </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <div className="flex-1 flex flex-col items-center justify-center bg-gray-50">
-                                        <svg className="w-14 h-14 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
-                                        <span className="text-gray-500 text-sm font-semibold">No image</span>
-                                    </div>
-                                )}
+
+                                            {/* Title Section with Gradient Background */}
+                                            <div className="flex-shrink-0 px-5 py-5 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+                                                {/* Decorative Gradient Overlay */}
+                                                <div className="absolute inset-0 bg-gradient-to-r from-red-600/10 via-transparent to-orange-500/10" />
+                                                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/50 to-transparent" />
+
+                                                {/* Title Content */}
+                                                <div className="relative z-10">
+                                                    <h3 className="text-white font-bold text-base md:text-lg text-center leading-tight mb-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-red-400 group-hover:to-orange-400 group-hover:bg-clip-text transition-all duration-300">
+                                                        {index + 1}. {itemData.title}
+                                                    </h3>
+                                                    {itemData.description && (
+                                                        <p className="text-gray-400 text-xs text-center line-clamp-2 leading-relaxed">
+                                                            {itemData.description}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                {/* View Details Indicator */}
+                                                <div className="absolute bottom-2 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                                    <div className="flex items-center gap-1 text-red-400 text-xs font-medium">
+                                                        <span>View</span>
+                                                        <svg className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                                        </svg>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+                                            <div className="p-6 bg-white rounded-2xl shadow-md border border-gray-100">
+                                                <svg className="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            </div>
+                                            <span className="mt-4 text-gray-500 text-sm font-semibold">No image available</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         ))
                     )}

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/app/lib/supabase';
+import { withAdminAuth } from '@/app/lib/auth';
 
-// POST - Submit contact form
+// POST - Submit contact form - PUBLIC (Users can submit)
 export async function POST(request: NextRequest) {
     try {
         if (!supabase) {
@@ -42,8 +43,8 @@ export async function POST(request: NextRequest) {
     }
 }
 
-// GET - Admin fetch all contact enquiries
-export async function GET() {
+// GET - Admin fetch all contact enquiries - PROTECTED (Admin only)
+export const GET = withAdminAuth(async () => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -64,10 +65,10 @@ export async function GET() {
         console.error('Contact GET error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
 
-// DELETE - Delete contact enquiry
-export async function DELETE(request: NextRequest) {
+// DELETE - Delete contact enquiry - PROTECTED (Admin only)
+export const DELETE = withAdminAuth(async (request: NextRequest) => {
     try {
         if (!supabase) {
             return NextResponse.json({ error: 'Database not configured' }, { status: 500 });
@@ -95,4 +96,5 @@ export async function DELETE(request: NextRequest) {
         console.error('Contact DELETE error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+});
+
