@@ -1,118 +1,93 @@
-'use client';
+import { Metadata } from 'next';
+import ProductsPageClient from './ProductsClient';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { FolderTree, ChevronRight, Loader2 } from 'lucide-react';
-import Head from 'next/head';
+export const dynamic = 'force-dynamic';
 
 interface Category {
-    id: string;
-    name: string;
-    slug: string;
-    description: string;
-    image_url: string | null;
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  image_url: string | null;
 }
 
-export default function ProductsPage() {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(true);
+async function getCategories(): Promise<Category[]> {
+  try {
+    const protocol =
+      process.env.NODE_ENV === 'production' ? 'https' : 'http';
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const response = await fetch('/api/categories');
-                if (response.ok) {
-                    const data = await response.json();
-                    setCategories(data.categories || []);
-                }
-            } catch (error) {
-                console.error('Failed to fetch categories:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchCategories();
-    }, []);
+    const host =
+      process.env.VERCEL_URL ||
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      'localhost:3003';
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-red-500" />
-            </div>
-        );
+    const baseUrl = host.startsWith('http')
+      ? host
+      : `${protocol}://${host}`;
+
+    const url = `${baseUrl}/api/categories`;
+
+    const response = await fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      console.error(
+        `Failed to fetch categories: ${response.status} ${response.statusText}`
+      );
+      return [];
     }
 
-    return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Hero Section */}
-            <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-12 sm:py-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center"
-                    >
-                        <h1 className="text-3xl sm:text-4xl font-bold mb-3 sm:mb-4">Our Products</h1>
-                        <p className="text-red-100 text-base sm:text-lg max-w-2xl mx-auto">
-                            Explore our wide range of products across various categories
-                        </p>
-                    </motion.div>
-                </div>
-            </div>
+    const data = await response.json();
+    return data.categories || [];
+  } catch (error) {
+    console.error('Failed to fetch categories:', error);
+    return [];
+  }
+}
 
-            {/* Categories Grid */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {categories.map((category, index) => (
-                        <motion.div
-                            key={category.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                        >
-                            <Link href={`/products/${category.slug}`}>
-                                <div className="bg-white rounded-lg sm:rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:border-red-200 transition-all duration-300 group cursor-pointer h-full">
-                                    {/* Category Image */}
-                                    <div className="aspect-video bg-gray-100 relative overflow-hidden flex items-center justify-center">
-                                        {category.image_url ? (
-                                            <img
-                                                src={category.image_url}
-                                                alt={category.name}
-                                                className="w-full h-full object-contain p-2 sm:p-4 transition-all duration-200"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <FolderTree className="w-8 h-8 sm:w-12 sm:h-12 text-gray-300" />
-                                            </div>
-                                        )}
-                                    </div>
-                                    {/* Category Info */}
-                                    <div className="p-4 sm:p-5">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 group-hover:text-red-600 transition-colors">
-                                                {category.name}
-                                            </h3>
-                                            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-300 group-hover:text-red-500 group-hover:translate-x-1 transition-all" />
-                                        </div>
-                                        <p className="text-gray-500 text-xs sm:text-sm line-clamp-2">
-                                            {category.description || 'Explore products in this category'}
-                                        </p>
-                                    </div>
-                                </div>
-                            </Link>
-                        </motion.div>
-                    ))}
-                </div>
+/* ============================
+   SEO METADATA
+============================ */
 
-                {categories.length === 0 && (
-                    <div className="text-center py-8 sm:py-12">
-                        <FolderTree className="w-12 h-12 sm:w-16 sm:h-16 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-600 mb-2">No categories yet</h3>
-                        <p className="text-gray-400 text-sm sm:text-base">Categories will appear here once added</p>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+export const metadata: Metadata = {
+  title: 'Product Categories | Lovosis Technologies Pvt. Ltd.',
+  description: 'Explore our wide range of product categories. Find high-quality industrial equipment and supplies at Lovosis Technology Pvt Ltd.',
+  keywords: 'industrial products, equipment categories, Lovosis Technology Pvt Ltd products, industrial supplies',
+  openGraph: {
+    title: 'Product Categories | Lovosis Technologies Pvt. Ltd.',
+    description: 'Explore our wide range of product categories. Find high-quality industrial equipment and supplies at Lovosis Technology Pvt Ltd.',
+    type: 'website',
+    locale: 'en_US',
+    siteName: 'Lovosis Technologies Pvt. Ltd.',
+    url: 'https://lovosis.in/products',
+    images: [{
+      url: '/logo0bg.jpg', // Make sure to add an OG image in your public folder
+      width: 1200,
+      height: 630,
+      alt: 'Lovosis Technology Pvt Ltd Product Categories'
+    }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Product Categories | Lovosis Technologies Pvt. Ltd.',
+    description: 'Explore our wide range of product categories. Find high-quality industrial equipment and supplies at Lovosis Technology Pvt Ltd.',
+    images: ['/logo0bg.jpg'], // Same as OG image
+  },
+  robots: {
+    index: true,
+    follow: true,
+  }
+};
+/* ============================
+   PAGE
+============================ */
+
+export default async function ProductsPage() {
+  const categories = await getCategories();
+
+  return <ProductsPageClient categories={categories} />;
 }

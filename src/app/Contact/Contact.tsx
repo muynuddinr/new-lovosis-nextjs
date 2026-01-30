@@ -13,7 +13,9 @@ export default function Contact() {
     message: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -28,9 +30,9 @@ export default function Contact() {
     setSubmitting(true);
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
@@ -50,7 +52,7 @@ export default function Contact() {
         alert(data.error || "Failed to submit. Please try again.");
       }
     } catch (error) {
-      console.error('Submit error:', error);
+      console.error("Submit error:", error);
       alert("Failed to submit. Please try again.");
     } finally {
       setSubmitting(false);
@@ -77,7 +79,7 @@ export default function Contact() {
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     if (contactRef.current) observer.observe(contactRef.current);
@@ -164,18 +166,20 @@ export default function Contact() {
         {/* Contact Form Section */}
         <div
           ref={contactRef}
-          className={`container mx-auto px-6 py-3 md:py-4 transition-all duration-1000 ease-out ${contactVisible
-            ? "opacity-100 translate-y-0"
-            : "opacity-0 translate-y-8"
-            }`}
+          className={`container mx-auto px-6 py-3 md:py-4 transition-all duration-1000 ease-out ${
+            contactVisible
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-8"
+          }`}
         >
           <div className="flex flex-col md:flex-row gap-6 max-w-6xl mx-auto">
             {/* Left side - Company Information */}
             <div
-              className={`md:w-1/2 transition-all duration-1000 delay-300 ease-out flex flex-col ${contactVisible
-                ? "opacity-100 translate-x-0"
-                : "opacity-0 -translate-x-8"
-                }`}
+              className={`md:w-1/2 transition-all duration-1000 delay-300 ease-out flex flex-col ${
+                contactVisible
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-8"
+              }`}
             >
               <h2 className="text-2xl md:text-3xl font-bold mb-3 text-black">
                 REACH OUT TO US
@@ -220,6 +224,9 @@ export default function Contact() {
                     EMAIL
                   </h3>
                   <p className="text-red-600 text-xs font-semibold">
+                    info@lovosis.in
+                  </p>
+                  <p className="text-red-600 text-xs font-semibold">
                     lovosist@gmail.com
                   </p>
                 </div>
@@ -231,7 +238,7 @@ export default function Contact() {
                   </h3>
                   <div className="flex space-x-2.5">
                     <a
-                      href="https://www.facebook.com/lovosis"
+                      href="https://www.facebook.com/p/LovosisTechnology-61572576592724/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors duration-300"
@@ -244,22 +251,9 @@ export default function Contact() {
                         <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                       </svg>
                     </a>
+                    
                     <a
-                      href="https://twitter.com/lovosis"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center text-white hover:bg-blue-500 transition-colors duration-300"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
-                      </svg>
-                    </a>
-                    <a
-                      href="https://www.instagram.com/lovosis"
+                      href="https://www.instagram.com/lovosis_technology?igsh=cmt3b2JnYTRhd3gx"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-500 rounded-full flex items-center justify-center text-white hover:from-purple-700 hover:to-pink-600 transition-all duration-300"
@@ -273,7 +267,7 @@ export default function Contact() {
                       </svg>
                     </a>
                     <a
-                      href="https://www.linkedin.com/company/lovosis"
+                      href="https://www.linkedin.com/company/105877550/"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-8 h-8 bg-blue-700 rounded-full flex items-center justify-center text-white hover:bg-blue-800 transition-colors duration-300"
@@ -287,7 +281,7 @@ export default function Contact() {
                       </svg>
                     </a>
                     <a
-                      href="https://www.youtube.com/channel/lovosis"
+                      href="https://www.youtube.com/@LovosisTechnology"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white hover:bg-red-700 transition-colors duration-300"
@@ -301,7 +295,7 @@ export default function Contact() {
                       </svg>
                     </a>
                     <a
-                      href="https://wa.me/919747745544"
+                      href="https://wa.me/+919747745544"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors duration-300"
@@ -321,16 +315,20 @@ export default function Contact() {
 
             {/* Right side - Contact Form */}
             <div
-              className={`md:w-1/2 transition-all duration-1000 delay-500 ease-out flex flex-col ${contactVisible
-                ? "opacity-100 translate-x-0"
-                : "opacity-0 translate-x-8"
-                }`}
+              className={`md:w-1/2 transition-all duration-1000 delay-500 ease-out flex flex-col ${
+                contactVisible
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-8"
+              }`}
             >
               <h2 className="text-2xl md:text-3xl font-bold mb-4 text-black">
                 CONNECT <span className="font-normal">WITH US.</span>
               </h2>
 
-              <form onSubmit={handleSubmit} className="space-y-3 py-3 flex-grow flex flex-col">
+              <form
+                onSubmit={handleSubmit}
+                className="space-y-3 py-3 flex-grow flex flex-col"
+              >
                 {/* First Name and Last Name in two columns */}
                 <div className="flex gap-3">
                   <div className="flex-1">
@@ -426,13 +424,15 @@ export default function Contact() {
         {/* Large Maps Section */}
         <div
           ref={mapRef}
-          className={`w-full py-3 md:py-4 transition-all duration-1000 ease-out ${mapVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-            }`}
+          className={`w-full py-3 md:py-4 transition-all duration-1000 ease-out ${
+            mapVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
         >
           <div className="max-w-6xl mx-auto px-4">
             <div
-              className={`text-center mb-3 md:mb-4 transition-all duration-1000 delay-300 ease-out ${mapVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                }`}
+              className={`text-center mb-3 md:mb-4 transition-all duration-1000 delay-300 ease-out ${
+                mapVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+              }`}
             >
               <h2 className="text-xl md:text-2xl font-bold text-black mb-2">
                 FIND <span className="font-normal">OUR OFFICE</span>
@@ -445,8 +445,9 @@ export default function Contact() {
 
             {/* Map Container */}
             <div
-              className={`w-full h-[350px] md:h-[450px] overflow-hidden shadow-lg transition-all duration-1000 delay-500 ease-out ${mapVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
-                }`}
+              className={`w-full h-[350px] md:h-[450px] overflow-hidden shadow-lg transition-all duration-1000 delay-500 ease-out ${
+                mapVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+              }`}
             >
               {/* Google Maps Embed - Updated with correct location */}
               <iframe

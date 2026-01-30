@@ -309,14 +309,7 @@ const ServicesSection: React.FC = () => {
                 </ul>
 
                 {/* CTA */}
-                <button className={`inline-flex items-center text-sm font-semibold transition-colors ${
-                  service.highlighted
-                    ? 'text-red-600 hover:text-red-700'
-                    : 'text-gray-600 hover:text-red-600'
-                }`}>
-                  Learn More
-                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </button>
+                
 
                 {/* Highlight Badge */}
                 {service.highlighted && (
@@ -375,31 +368,7 @@ const ServicesSection: React.FC = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="py-24 bg-red-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-              Ready to Start Your Project?
-            </h2>
-            <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
-              Let's discuss how we can bring your vision to life with our expert team and cutting-edge technology.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-8 py-3 bg-white text-red-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
-                Get Quote
-              </button>
-              <button className="px-8 py-3 border-2 border-white text-white font-semibold rounded-lg hover:bg-white hover:text-red-600 transition-colors">
-                Contact Us
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      </div>
+      
     </div>
   );
 };
