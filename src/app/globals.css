@@ -46,3 +46,7 @@
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
 }
+html,
+body {
+  overflow-x: hidden;
+}

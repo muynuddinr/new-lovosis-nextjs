@@ -327,7 +327,7 @@ export default function ProductDetailClient({ slug }: ProductDetailClientProps) 
 
                                 {/* Contact Button */}
                                 <Link
-                                    href="/Contact"
+                                    href="/contact"
                                     className="w-full flex items-center justify-center gap-3 py-4 lg:py-5 bg-gray-900 hover:bg-gray-800 text-white font-bold rounded-xl lg:rounded-2xl transition-all text-base lg:text-lg hover:-translate-y-0.5"
                                 >
                                     <svg className="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

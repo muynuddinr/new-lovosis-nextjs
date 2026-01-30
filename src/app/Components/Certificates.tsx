@@ -182,7 +182,7 @@ export default function Certificates() {
                         certificateItems.map((itemData, index) => (
                             <div
                                 key={itemData._id}
-                                className={`group relative h-[420px] rounded-3xl cursor-pointer overflow-hidden transition-all duration-500 hover:scale-[1.02] hover:-translate-y-2 ${selectedItem?._id === itemData._id ? 'hidden' : ''}`}
+                                className={`group relative h-[420px] rounded-3xl cursor-pointer overflow-hidden transition-all duration-500  ${selectedItem?._id === itemData._id ? 'hidden' : ''}`}
                                 onClick={() => {
                                     setSelectedItem(itemData);
                                     setCurrentImageIndex(0);
