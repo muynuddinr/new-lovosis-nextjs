@@ -137,7 +137,7 @@ const AboutUsPage = () => {
               {/* Left Image - Building */}
               <div className="rounded-2xl sm:rounded-[32px] overflow-hidden shadow-lg sm:shadow-xl bg-[#6b7b94]">
                 <img 
-                  src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=700&h=500&fit=crop" 
+                  src="/about/about1.png" 
                   alt="Building exterior" 
                   className="w-full h-48 sm:h-64 lg:h-[420px] object-cover"
                 />
@@ -145,7 +145,7 @@ const AboutUsPage = () => {
               {/* Right Image - Team */}
               <div className="rounded-2xl sm:rounded-[32px] overflow-hidden shadow-lg sm:shadow-xl">
                 <img 
-                  src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=700&h=500&fit=crop" 
+                  src="/about/about2.png" 
                   alt="Team meeting" 
                   className="w-full h-48 sm:h-64 lg:h-[420px] object-cover"
                 />
