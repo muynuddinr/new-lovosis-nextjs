@@ -671,7 +671,7 @@ export default function Navbar() {
           {/* Right Side */}
           <div className="flex items-center gap-4">
             <Link
-              href="/contact"
+              href="/Contact"
               className="hidden md:inline-block px-4 py-1.5 text-sm font-semibold text-red-600 border border-red-600 hover:bg-red-600 hover:text-white transition-all"
             >
               Contact

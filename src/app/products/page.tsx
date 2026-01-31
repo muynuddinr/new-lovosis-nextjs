@@ -25,14 +25,17 @@ async function getCategories(): Promise<Category[]> {
       },
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
       console.error(
         `Failed to fetch categories: ${response.status} ${response.statusText}`,
+        data
       );
       return [];
     }
 
-    const data = await response.json();
+    console.log(`Fetched ${data.categories?.length || 0} categories`);
     return data.categories || [];
   } catch (error) {
     console.error("Failed to fetch categories:", error);
