@@ -1,5 +1,6 @@
 import About from "./Aboutus";
 import type { Metadata } from "next";
+import { createBreadcrumbSchema } from "../../utils/aeoSchemas";
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -24,8 +25,20 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function AboutPage() {
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: "Home", url: "https://lovosis.in" },
+    { name: "About", url: "https://lovosis.in/about" }
+  ]);
+
   return (
     <>
+      {/* Breadcrumb Schema for AEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
       <About />
     </>
   );

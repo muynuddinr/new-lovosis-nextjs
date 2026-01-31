@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import ProductsPageClient from "./ProductsClient";
+import { createBreadcrumbSchema } from "../../utils/aeoSchemas";
 
 export const dynamic = "force-dynamic";
 
@@ -99,5 +100,21 @@ export const metadata: Metadata = {
 export default async function ProductsPage() {
   const categories = await getCategories();
 
-  return <ProductsPageClient categories={categories} />;
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: "Home", url: "https://lovosis.in" },
+    { name: "Products", url: "https://lovosis.in/products" }
+  ]);
+
+  return (
+    <>
+      {/* Breadcrumb Schema for AEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
+      <ProductsPageClient categories={categories} />
+    </>
+  );
 }

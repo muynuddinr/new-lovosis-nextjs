@@ -7,28 +7,36 @@ export default function Faq() {
 
   const faqs = [
     {
-      question: "What services do you offer?",
-      answer: "We offer custom electronics design, rapid prototyping, quality assurance testing, and full-scale production manufacturing for innovative electronics solutions."
+      question: "What are educational trainer kits?",
+      answer: "Educational trainer kits are comprehensive hands-on learning tools designed specifically for engineering students and professionals. They include electronic components, circuit boards, power supplies, and measurement instruments that allow users to build, test, and understand real-world electronic systems. Our kits cover topics from basic electronics to advanced power systems and measurement techniques."
     },
     {
-      question: "How long does the prototyping process take?",
-      answer: "Our rapid prototyping typically takes 2-4 weeks depending on complexity. We work closely with you to ensure fast turnaround while maintaining high quality."
+      question: "Do you provide power supply solutions in India?",
+      answer: "Yes, we offer a complete range of power supply solutions across India. Our manufacturing facilities in Bangalore and Kerala produce AC and DC regulated power supplies, industrial power systems, and custom power solutions. We serve educational institutions, research labs, and industrial clients nationwide with reliable, high-quality power equipment."
     },
     {
-      question: "Do you provide quality assurance?",
-      answer: "Yes, we have rigorous quality assurance processes including testing, certification, and compliance checks to ensure every component meets industry standards."
+      question: "What test and measuring instruments do you offer?",
+      answer: "We provide professional-grade test and measuring instruments including digital storage oscilloscopes (DSO), multimeters, signal generators, spectrum analyzers, and other laboratory equipment. Our instruments are essential for engineering education, research, and quality control in electronics manufacturing."
     },
     {
-      question: "Can you handle large-scale production?",
-      answer: "Absolutely. We partner with scalable manufacturing facilities to handle everything from small batches to large-scale production runs."
+      question: "How can I contact Lovosis for inquiries?",
+      answer: "You can reach us through multiple channels: email us at info@lovosis.in, call +91 7012970281, use our website contact form, or connect via WhatsApp at +91 9747745544. Our technical support team is available Monday to Friday, 9 AM to 6 PM IST, and we typically respond within 24 hours."
     },
     {
-      question: "What industries do you serve?",
-      answer: "We serve a wide range of industries including consumer electronics, automotive, medical devices, IoT, and industrial automation."
+      question: "Do you offer custom educational equipment?",
+      answer: "Absolutely! We specialize in custom educational trainer kits and laboratory equipment. Whether you need specific circuit designs, custom power supplies, or specialized measurement tools, our engineering team can design and manufacture solutions tailored to your curriculum requirements and technical specifications."
     },
     {
-      question: "How do I get a quote?",
-      answer: "You can request a quote through our website or by contacting our sales team directly. We'll need details about your project requirements."
+      question: "What is the warranty on your products?",
+      answer: "We offer comprehensive warranty coverage on all our products. Educational trainer kits and laboratory equipment come with a 1-year warranty against manufacturing defects. Power supplies and test instruments have a 2-year warranty. Extended warranty options are available, and our technical support team provides lifetime assistance for proper usage and maintenance."
+    },
+    {
+      question: "Do you provide training and support for your equipment?",
+      answer: "Yes, we offer extensive training and support services. This includes user manuals, video tutorials, online documentation, and hands-on training sessions for educators. Our technical support team provides guidance on equipment setup, usage, troubleshooting, and integration into your curriculum. We also offer customized training programs for faculty and students."
+    },
+    {
+      question: "Can you deliver to my location in India?",
+      answer: "We provide nationwide delivery across India with reliable logistics partners. Standard delivery typically takes 3-7 business days depending on your location. Express delivery options are available for urgent requirements. We also offer installation and commissioning services for larger laboratory setups."
     }
   ];
 

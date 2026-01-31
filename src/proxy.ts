@@ -8,7 +8,7 @@ import { verifyToken } from '@/app/lib/jwt';
  * - Redirects unauthorized users to login
  * - Clears invalid/expired tokens
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const path = request.nextUrl.pathname;
 
     // Protect admin dashboard routes

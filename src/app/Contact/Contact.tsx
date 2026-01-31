@@ -194,7 +194,7 @@ export default function Contact() {
                     4-72/2, Swathi Building, 3rd Floor, Opp. Singapura Garden,
                     1st Main Lakshmipura Road
                     <br />
-                    Abbigere, Bengaluru, Karnataka 560090
+                    Abbigere, Bengaluru, Karnataka 560013
                   </p>
                 </div>
 

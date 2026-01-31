@@ -224,7 +224,7 @@ export const organizationSchema = {
       "4-72/2, Swathi Building, 3rd Floor, Opp. Singapura Garden, 1st Main Lakshmipura Road",
     addressLocality: "Abbigere",
     addressRegion: "Karnataka",
-    postalCode: "560090",
+    postalCode: "560013",
     addressCountry: "IN",
   },
   sameAs: [

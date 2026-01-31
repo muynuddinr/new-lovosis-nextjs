@@ -13,15 +13,15 @@
   "contactPoint": {
     "@type": "ContactPoint",
     "contactType": "Customer Support",
-    "telephone": "+91-XXXXXXXXXX",
-    "email": "support@lovosis.in",
+    "telephone": "+91-97447745544",
+    "email": "info@lovosis.in",
     "areaServed": "IN"
   },
   "address": {
     "@type": "PostalAddress",
     "streetAddress": "Lovosis Office",
     "addressLocality": "India",
-    "postalCode": "XXXXX",
+    "postalCode": "560013",
     "addressCountry": "IN"
   },
   "offers": [

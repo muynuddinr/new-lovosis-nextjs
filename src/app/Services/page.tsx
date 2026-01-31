@@ -2,6 +2,7 @@ import Navbar from "../Components/Navbar";
 import ServicesSection from "./Services";
 import Footer from "../Components/Footer";
 import type { Metadata } from "next";
+import { createBreadcrumbSchema } from "../../utils/aeoSchemas";
 
 export const metadata: Metadata = {
   title: "Services - Lovosis | Trainer Kits & Test Instruments Support",
@@ -67,8 +68,20 @@ export const metadata: Metadata = {
 };
 
 export default function ServicesPage() {
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: "Home", url: "https://lovosis.in" },
+    { name: "Services", url: "https://lovosis.in/services" }
+  ]);
+
   return (
     <div>
+      {/* Breadcrumb Schema for AEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumbSchema),
+        }}
+      />
       <ServicesSection />
     </div>
   );

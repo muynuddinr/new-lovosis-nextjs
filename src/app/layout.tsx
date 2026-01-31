@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { defaultMetadata, organizationSchema } from "../utils/seo";
+import { localBusinessSchema, serviceSchema } from "../utils/aeoSchemas";
 import ConditionalNavbar from "./Components/ConditionalNavbar";
 import ConditionalFooter from "./Components/ConditionalFooter";
 
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
   creator: "Lovosis",
   publisher: "Lovosis",
   robots: "index, follow",
+  metadataBase: new URL('https://lovosis.in'),
   alternates: {
     canonical: "https://lovosis.in",
   },
@@ -69,6 +71,22 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(organizationSchema),
+          }}
+        />
+
+        {/* Local Business Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(localBusinessSchema),
+          }}
+        />
+
+        {/* Service Schema */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(serviceSchema),
           }}
         />
       </head>
