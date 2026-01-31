@@ -273,10 +273,10 @@ export const dynamicContentSchema = {
       position: 3,
       item: {
         "@type": "CollectionPage",
-        "@id": "https://lovosis.in/certificates",
+        "@id": "https://lovosis.in/Certificates",
         name: "Certificates",
         description: "Upcoming and past events",
-        url: "https://lovosis.in/certificates",
+        url: "https://lovosis.in/Certificates",
       },
     },
     {
@@ -284,10 +284,10 @@ export const dynamicContentSchema = {
       position: 4,
       item: {
         "@type": "CollectionPage",
-        "@id": "https://lovosis.in/services",
+        "@id": "https://lovosis.in/Services",
         name: "Services",
         description: "Our range of services",
-        url: "https://lovosis.in/services",
+        url: "https://lovosis.in/Services",
       },
     },
     {
@@ -295,10 +295,10 @@ export const dynamicContentSchema = {
       position: 5,
       item: {
         "@type": "CollectionPage",
-        "@id": "https://lovosis.in/about",
+        "@id": "https://lovosis.in/About",
         name: "About",
         description: "Learn more about Lovosis Technologies",
-        url: "https://lovosis.in/about",
+        url: "https://lovosis.in/About",
       },
     },
    
@@ -307,7 +307,7 @@ export const dynamicContentSchema = {
 
 // Helper function to generate dynamic metadata
 export const generateDynamicMetadata = (
-  type: "products" | "certificates" | "services" | "about" | "home",
+  type: "products" | "Certificates" | "Services" | "About" | "home",
   data: any,
 ): Metadata => {
   return {

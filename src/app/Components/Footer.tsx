@@ -42,19 +42,19 @@ export default function Footer() {
 
   const quickLinks = [
     { name: 'Home', href: '/' },
-    { name: 'About Us', href: '/about' },
+    { name: 'About Us', href: '/About' },
     { name: 'Products', href: '/products' },
-    { name: 'Services', href: '/services' },
-    { name: 'Certificates', href: '/certificates' },
-    { name: 'Contact Us', href: '/contact' },
+    { name: 'Services', href: '/Services' },
+    { name: 'Certificates', href: '/Certificates' },
+    { name: 'Contact Us', href: '/Contact' },
   ];
 
   const services = [
-    { name: 'PCB Design', href: '/services' },
-    { name: 'Manufacturing', href: '/services' },
-    { name: 'Assembly', href: '/services' },
-    { name: 'Quality Testing', href: '/services' },
-    { name: 'Consulting', href: '/services' },
+    { name: 'PCB Design', href: '/Services' },
+    { name: 'Manufacturing', href: '/Services' },
+    { name: 'Assembly', href: '/Services' },
+    { name: 'Quality Testing', href: '/Services' },
+    { name: 'Consulting', href: '/Services' },
   ];
 
   return (

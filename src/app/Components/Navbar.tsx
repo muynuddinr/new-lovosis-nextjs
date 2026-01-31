@@ -277,9 +277,9 @@ export default function Navbar() {
   const navItems = [
     { href: '/', label: 'Home' },
     { href: '/products', label: 'Products' },
-    { href: '/about', label: 'About' },
-    { href: '/services', label: 'Services' },
-    { href: '/certificates', label: 'Certificates' },
+    { href: '/About', label: 'About' },
+    { href: '/Services', label: 'Services' },
+    { href: '/Certificates', label: 'Certificates' },
   ];
 
   const isActive = (href: string) => pathname === href;

@@ -14,16 +14,9 @@ interface Category {
 
 async function getCategories(): Promise<Category[]> {
   try {
-    const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
-
-    const host =
-      process.env.VERCEL_URL ||
-      process.env.NEXT_PUBLIC_BASE_URL ||
-      "localhost:3003";
-
-    const baseUrl = host.startsWith("http") ? host : `${protocol}://${host}`;
-
-    const url = `${baseUrl}/api/categories`;
+    // Use relative URL for server-side fetches in Next.js
+    // This automatically uses the correct domain in production
+    const url = "/api/categories";
 
     const response = await fetch(url, {
       cache: "no-store",
