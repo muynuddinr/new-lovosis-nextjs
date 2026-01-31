@@ -59,11 +59,18 @@ export const metadata: Metadata = {
     "power supply contact",
     "equipment supplier contact",
   ],
+  alternates: {
+    canonical: "https://lovosis.in/contact",
+  },
   openGraph: {
     title: "Contact Lovosis - Educational & Electronic Trainer Kits Supplier",
     description: "Contact Lovosis for trainer kits and test instruments",
-    url: "https://lovosis.in/Contact",
+    url: "https://lovosis.in/contact",
     type: "website",
+  },
+  other: {
+    "alternate-url-1": "https://educationaltrainerkits.com/contact",
+    "alternate-url-2": "https://electricaltrainerkits.com/contact",
   },
 };
 

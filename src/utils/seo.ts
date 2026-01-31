@@ -184,9 +184,11 @@ export const defaultMetadata: Metadata = {
   verification: {
     google: "",
   },
-  other: {
-    "google-site-verification": "",
-  },
+other: {
+     "google-site-verification": "",
+     "alternate-domain-1": "https://educationaltrainerkits.com",
+     "alternate-domain-2": "https://electricaltrainerkits.com",
+   },
   generator: "Lovosis Technologies Website",
   applicationName: "Lovosis Technologies",
   referrer: "origin-when-cross-origin",

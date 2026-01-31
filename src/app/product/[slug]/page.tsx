@@ -32,6 +32,13 @@ export async function generateMetadata({
       index: true,
       follow: true,
     },
+     other: {
+      'alternate-url-1': `https://educationaltrainerkits.com/product/${slug}`,
+      'alternate-url-2': `https://electricaltrainerkits.com/product/${slug}`,
+    },
+     alternates: {
+      canonical: `https://lovosis.in/product/${slug}`,
+    },
   };
 }
 

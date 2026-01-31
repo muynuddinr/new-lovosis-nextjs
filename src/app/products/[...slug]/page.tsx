@@ -36,7 +36,15 @@ export async function generateMetadata({
       index: true,
       follow: true,
     },
+     other: {
+      'alternate-url-1': `https://educationaltrainerkits.com/${slug.join('/')}`,
+      'alternate-url-2': `https://electricaltrainerkits.com/${slug.join('/')}`,
+    },
+     alternates: {
+      canonical: `https://lovosis.in/${slug.join('/')}`,
+    },
   };
+  
 }
 
 export default async function ProductsSlugPage({

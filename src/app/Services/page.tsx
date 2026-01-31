@@ -57,6 +57,13 @@ export const metadata: Metadata = {
     url: "https://lovosis.in/Services",
     type: "website",
   },
+   alternates: {
+      canonical: "https://lovosis.in/services",
+    },
+     other: {
+      'alternate-url-1': 'https://educationaltrainerkits.com/services',
+      'alternate-url-2': 'https://electricaltrainerkits.com/services',
+    },
 };
 
 export default function ServicesPage() {

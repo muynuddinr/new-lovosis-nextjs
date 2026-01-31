@@ -64,12 +64,19 @@ export const metadata: Metadata = {
     "achievements",
     "ISO certifications",
   ],
+   alternates: {
+      canonical: "https://lovosis.in/certificates",
+    },
   openGraph: {
     title: "Certificates - Lovosis | Quality Certifications & Standards",
     description: "Lovosis quality certifications and industry standards",
-    url: "https://lovosis.in/Gallery",
+    url: "https://lovosis.in/certificates",
     type: "website",
   },
+   other: {
+      'alternate-url-1': 'https://educationaltrainerkits.com/certificates',
+      'alternate-url-2': 'https://electricaltrainerkits.com/certificates',
+    },
 };
 
 export default function Home() {

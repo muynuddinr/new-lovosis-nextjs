@@ -137,7 +137,7 @@ const AboutUsPage = () => {
               {/* Left Image - Building */}
               <div className="rounded-2xl sm:rounded-[32px] overflow-hidden shadow-lg sm:shadow-xl bg-[#6b7b94]">
                 <img 
-                  src="/about/about1.png" 
+                  src="/about/about.png" 
                   alt="Building exterior" 
                   className="w-full h-48 sm:h-64 lg:h-[420px] object-cover"
                 />
@@ -145,7 +145,7 @@ const AboutUsPage = () => {
               {/* Right Image - Team */}
               <div className="rounded-2xl sm:rounded-[32px] overflow-hidden shadow-lg sm:shadow-xl">
                 <img 
-                  src="/about/about2.png" 
+                  src="/about/aboutt.png" 
                   alt="Team meeting" 
                   className="w-full h-48 sm:h-64 lg:h-[420px] object-cover"
                 />
@@ -282,7 +282,7 @@ const AboutUsPage = () => {
               <div className="absolute -right-12 sm:-right-24 top-16 sm:top-20 w-48 sm:w-[340px] h-64 sm:h-[500px] hidden lg:block">
                 <div className="relative w-full h-full">
                   <img 
-                    src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=400&h=600&fit=crop" 
+                    src="/about/abouut.png" 
                     alt="Product bottles" 
                     className="w-full h-full object-cover rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl"
                   />
