@@ -268,31 +268,7 @@ export default function ServicesSection() {
                     </motion.p>
 
                     {/* Learn More Link */}
-                    <motion.div
-                      animate={{
-                        x: isHovered ? 10 : 0,
-                      }}
-                      transition={{ delay: 0.1 }}
-                      className="flex items-center gap-2"
-                    >
-                      <span
-                        className={`text-sm font-semibold transition-colors ${
-                          isHovered ? "text-white" : "text-red-600"
-                        }`}
-                      >
-                        Learn more
-                      </span>
-                      <motion.span
-                        animate={{
-                          x: isHovered ? 5 : 0,
-                        }}
-                        className={`text-lg transition-colors ${
-                          isHovered ? "text-white" : "text-red-600"
-                        }`}
-                      >
-                        →
-                      </motion.span>
-                    </motion.div>
+                   
                   </div>
                 </motion.div>
               </motion.div>
