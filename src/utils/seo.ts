@@ -295,10 +295,10 @@ export const dynamicContentSchema = {
       position: 5,
       item: {
         "@type": "CollectionPage",
-        "@id": "https://lovosis.in/About",
+        "@id": "https://lovosis.in/about",
         name: "About",
         description: "Learn more about Lovosis Technologies",
-        url: "https://lovosis.in/About",
+        url: "https://lovosis.in/about",
       },
     },
    
@@ -307,7 +307,7 @@ export const dynamicContentSchema = {
 
 // Helper function to generate dynamic metadata
 export const generateDynamicMetadata = (
-  type: "products" | "Certificates" | "Services" | "About" | "home",
+  type: "products" | "Certificates" | "Services" | "about" | "home",
   data: any,
 ): Metadata => {
   return {
